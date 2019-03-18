@@ -30,7 +30,7 @@ def problem7(A, alpha):
 
 
 def problem8(A, i, j):
-    return A[i - 1][j - 1]
+    return A[i][j]
 
 
 def problem9(A, i):
@@ -38,16 +38,21 @@ def problem9(A, i):
 
 
 def problem10(A, c, d):
-    return ...
+    Si = np.nonzero((A >= c) & (A <= d))
+    return np.mean(np.take(A, Si))
 
 
 def problem11(A, k):
-    return ...
+    vals, vects = np.linalg.eig(A)
+    k = k - 1
+    return vects[:, :k]
 
 
 def problem12(A, x):
-    return ...
+    return np.linalg.solve(A, x)
 
 
 def problem13(A, x):
-    return ...
+    tp_x = np.transpose(x)
+    tp_A = np.transpose(A)
+    return np.transpose(np.linalgsolve(tp_A, tp_))
