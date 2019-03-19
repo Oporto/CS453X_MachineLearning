@@ -28,7 +28,7 @@ def predict_per_predictor(predictor, image):
 
 
 def predict_image(image, predictors):
-    image = image.reshape(3, 3)
+    image = image.reshape(24, 24)
     # vectorized_predictor = np.vectorize(predict_per_predictor)
     # predicts = vectorized_predictor(np.array(predictors), image)
     predicts = np.apply_along_axis(lambda pred: predict_per_predictor(pred, image), 1, np.array(predictors))
@@ -38,8 +38,9 @@ def predict_image(image, predictors):
 
 def measureAccuracyOfPredictors(predictor, X, y, previous_predictors):
     predictor = list(predictor)
+    print(predictor)
     if predictor in previous_predictors or (predictor[0] == predictor[2] and predictor[1] == predictor[3]):
-        return 0
+        return float(0)
     # vectorized_predict = np.vectorize(predict_image)
     # vectorized_predict.excluded.add(1)
     predictors = previous_predictors.copy()
@@ -48,9 +49,7 @@ def measureAccuracyOfPredictors(predictor, X, y, previous_predictors):
     yhat = np.apply_along_axis(lambda img: predict_image(img, predictors), 1, X)
     # yhat = vectorized_predict(X, previous_predictors)
     acc = fPC(y, yhat)
-    print(acc)
-    #print("Testing predictor: ", predictor, " result: ", acc)
-    return acc
+    return float(acc)
 
 
 def display_predictors(im, predictors):
@@ -72,7 +71,7 @@ def display_predictors(im, predictors):
 
 def stepwiseRegression(trainingFaces, trainingLabels):
     possible_features = np.array(
-        np.meshgrid(np.arange(3), np.arange(3), np.arange(3), np.arange(3))).T.reshape(-1, 4)
+        np.meshgrid(np.arange(24), np.arange(24), np.arange(24), np.arange(24))).T.reshape(-1, 4)
     # possible_features = np.array(list(map(lambda x: Predictor(x[0],x[1],x[2],x[3]), possible_features)))
 
     best_predictors = []
@@ -82,9 +81,11 @@ def stepwiseRegression(trainingFaces, trainingLabels):
     # vectorized_accuracy.excluded.add(3)
 
     for j in range(5):
+        print(possible_features.dtype)
         predictor_results = np.apply_along_axis(
             lambda pred: measureAccuracyOfPredictors(pred, trainingFaces, trainingLabels, best_predictors),
             1, possible_features)
+        print(predictor_results.dtype)
         # predictor_results = vectorized_accuracy(possible_features, trainingFaces, trainingLabels, best_predictors)
         best_feature = possible_features[np.argmax(predictor_results)]
         best_predictors.append(list(best_feature))
@@ -95,13 +96,22 @@ def stepwiseRegression(trainingFaces, trainingLabels):
 
 def loadData(which):
     faces = np.load("{}ingFaces.npy".format(which))
-    faces = faces.reshape(-1, 3*3)  # Reshape from 576 to 24x24
+    faces = faces.reshape(-1, 24*24)  # Reshape from 576 to 24x24
     labels = np.load("{}ingLabels.npy".format(which))
     return faces, labels
+
+
+def tester(trainingFaces, trainingLabels, testingFaces, testingLabels):
+    for sample in [400, 800, 1200, 1600, 2000]:
+        predictors = stepwiseRegression(trainingFaces[:sample], trainingLabels[:sample])
+        trainingAccuracy = measureAccuracyOfPredictors(predictors, trainingFaces[:sample], trainingLabels[:sample])
+        testingAccuracy = measureAccuracyOfPredictors(predictors, testingFaces, testingLabels)
+        print("When trained with", sample, "images:")
+        print("Training Accuracy:", trainingAccuracy)
+        print("Testing Accuracy:", testingAccuracy)
 
 
 if __name__ == "__main__":
     testingFaces, testingLabels = loadData("test")
     trainingFaces, trainingLabels = loadData("train")
-    training_results = stepwiseRegression(trainingFaces[:10], trainingLabels[:10])
-    print(training_results)
+    tester(trainingFaces, trainingLabels, testingFaces, testingLabels)
