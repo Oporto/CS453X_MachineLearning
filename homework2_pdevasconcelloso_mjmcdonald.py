@@ -5,12 +5,20 @@ def find_cost(predict, actual):
     diff_squared = np.square(predict - actual)
     return np.average(diff_squared) / 2
 
+
+def find_cost_with_penalty(predict, actual, weight, alpha):
+    diff_squared = np.square(predict - actual)
+    old_cost = np.average(diff_squared) / 2
+    penalty_term = (alpha / (2*len(actual)))*weight*np.transpose(weight)
+    return old_cost + penalty_term
+
     
 def calc_prediction(X, aug_w):
     w = aug_w[:-1]
     b = aug_w[-1]
     pred = X.dot(w) + b
     return pred
+
     
     
 def gradient(X, y, w, b):
@@ -26,8 +34,10 @@ def predicts(train_images, test_images, train_values, test_values, aug_w):
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
     
+
 def augment(X):
     return np.hstack((X, np.transpose(np.atleast_2d(np.ones(X.shape[0])))))
+
 
 def one_shot(train_images, test_images, train_values, test_values):
     aug_train_images = augment(train_images)
@@ -46,6 +56,12 @@ def gradiant_descent(T, e, train_images, test_images, train_values, test_values)
         b = b - e*delta
     aug_w = w.append(b)
     predicts(train_images, test_images, train_values, test_values, aug_w)
+
+
+def generate_weights():
+    sigma = 0.01 ** 0.5
+    mu = 0.5
+    return sigma * np.random.randn(48*48+1) + mu
 
 
 if __name__ == "__main__":
