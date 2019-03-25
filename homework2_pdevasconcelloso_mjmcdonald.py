@@ -12,6 +12,12 @@ def calc_prediction(X, aug_w):
     pred = X.dot(w) + b
     return pred
     
+    
+def gradient(X, y, w):
+    diff = X.dot(w) - y
+    return np.transpose(X).dot(diff) / X.shape[0]
+    
+    
 def augment(X):
     return np.hstack((X, np.transpose(np.atleast_2d(np.ones(X.shape[0])))))
 
