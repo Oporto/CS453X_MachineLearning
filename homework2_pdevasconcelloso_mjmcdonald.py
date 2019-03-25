@@ -11,8 +11,10 @@ def find_cost_with_penalty(predict, actual, weight, alpha):
     diff_squared = np.square(predict - actual)
     old_cost = np.average(diff_squared) / 2
     penalty_term = (alpha / (2*len(actual)))*weight*np.transpose(weight)
-    return old_cost + penalty_term
+    return np.average(old_cost + penalty_term)
 
+def find_rmse(predict, actual):
+    return np.sqrt(np.square(predict - actual)).mean()
     
 def calc_prediction(X, aug_w):
     w = aug_w[:-1]
@@ -58,6 +60,8 @@ def predicts_regularized(train_images, test_images, train_values, test_values, a
     print("Regularized Gradient Descent: \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
+    
+    print("Mean square error: ", find_rmse(test_pred, test_values))
 
     im = aug_w[0:-1]
     im = im.reshape(48, 48)
