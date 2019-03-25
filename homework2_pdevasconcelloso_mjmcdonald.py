@@ -1,8 +1,16 @@
 import numpy as np
 
+
 def find_cost(predict, actual):
     diff_squared = np.square(predict - actual)
     return np.average(diff_squared) / 2
+
+
+def find_cost_with_penalty(predict, actual, weight, alpha):
+    diff_squared = np.square(predict - actual)
+    old_cost = np.average(diff_squared) / 2
+    penalty_term = (alpha / (2*len(actual)))*weight*np.transpose(weight)
+    return old_cost + penalty_term
 
     
 def calc_prediction(X, aug_w):
