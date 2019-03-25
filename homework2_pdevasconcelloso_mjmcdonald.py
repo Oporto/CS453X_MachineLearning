@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def find_cost(predict, actual):
@@ -36,9 +37,15 @@ def predicts(train_images, test_images, train_values, test_values, aug_w, name):
     train_cost = find_cost(train_pred, train_values)
     test_cost = find_cost(test_pred, test_values)
     np.save(name, aug_w)
-    print("Analytical: \n")
+    print(name+": \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
+
+    im = aug_w[0:-1]
+    im = im.reshape(48, 48)
+    plt.imshow(im, cmap='gray')
+    plt.title(name)
+    plt.show()
 
 
 def predicts_regularized(train_images, test_images, train_values, test_values, aug_w, alpha):
@@ -47,9 +54,15 @@ def predicts_regularized(train_images, test_images, train_values, test_values, a
     train_cost = find_cost_with_penalty(train_pred, train_values, aug_w, alpha)
     test_cost = find_cost_with_penalty(test_pred, test_values, aug_w, alpha)
     np.save("regularized", aug_w)
-    print("Analytical: \n")
+    print("Regularized Gradient Descent: \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
+
+    im = aug_w[0:-1]
+    im = im.reshape(48, 48)
+    plt.imshow(im, cmap='gray')
+    plt.title("regularized")
+    plt.show()
     
 
 def augment(X):
@@ -105,5 +118,5 @@ if __name__ == "__main__":
     train_values = np.load("age_ytr.npy")
     test_values  = np.load("age_yte.npy")
     one_shot(train_images, test_images, train_values, test_values)
-    gradient_descent(50, 0.003, train_images, test_images, train_values, test_values)
-    gradient_descent_regularized(50, 0.003, 1, train_images, test_images, train_values, test_values)
+    gradient_descent(5000, 0.003, train_images, test_images, train_values, test_values)
+    gradient_descent_regularized(5000, 0.003, 1, train_images, test_images, train_values, test_values)
