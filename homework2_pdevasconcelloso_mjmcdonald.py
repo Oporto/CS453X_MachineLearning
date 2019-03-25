@@ -23,7 +23,7 @@ def calc_prediction(X, aug_w):
     
 def gradient(X, y, w, b):
     diff = X.dot(w) + b - y
-    return np.transpose(X).dot(diff) / X.shape[0], np.average(diff)
+    return np.transpose(X).dot(np.transpose(diff)) / X.shape[0], np.average(diff)
 
 def predicts(train_images, test_images, train_values, test_values, aug_w):
     train_pred = calc_prediction(train_images, aug_w)
@@ -47,14 +47,17 @@ def one_shot(train_images, test_images, train_values, test_values):
     predicts(train_images, test_images, train_values, test_values, aug_w)
     
 def gradiant_descent(T, e, train_images, test_images, train_values, test_values):
-    aug_w = ##
-    w = aug_w[:,-1]
+    aug_w = generate_weights()
+    w = aug_w[:-1]
     b = aug_w[-1]
     for t in range(T):
+        
         g, delta = gradient(train_images, train_values, w, b)
         w = w - e*g
         b = b - e*delta
-    aug_w = w.append(b)
+        print(np.average(g))
+        
+    aug_w = np.hstack((w,b))
     predicts(train_images, test_images, train_values, test_values, aug_w)
 
 
@@ -70,3 +73,4 @@ if __name__ == "__main__":
     train_values = np.load("age_ytr.npy")
     test_values  = np.load("age_yte.npy")
     one_shot(train_images, test_images, train_values, test_values)
+    gradiant_descent(600, 0.003, train_images, test_images, train_values, test_values)
