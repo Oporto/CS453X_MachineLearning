@@ -30,6 +30,7 @@ def gradient_regularized(X, y, w, b, alpha):
     unregularized = np.transpose(X).dot(np.transpose(diff)) / X.shape[0]
     return unregularized + (alpha / X.shape[0])*w, np.average(diff)
 
+
 def predicts(train_images, test_images, train_values, test_values, aug_w, name):
     train_pred = calc_prediction(train_images, aug_w)
     test_pred = calc_prediction(test_images, aug_w)
@@ -73,7 +74,6 @@ def gradient_descent(T, e, train_images, test_images, train_values, test_values)
         g, delta = gradient(train_images, train_values, w, b)
         w = w - e*g
         b = b - e*delta
-        print(np.average(g))
         
     aug_w = np.hstack((w,b))
     predicts(train_images, test_images, train_values, test_values, aug_w, "gradient_descent")
@@ -81,14 +81,22 @@ def gradient_descent(T, e, train_images, test_images, train_values, test_values)
 
 def gradient_descent_regularized(T, e, alpha, train_images, test_images, train_values, test_values):
     aug_w = generate_weights()
+    record_w = np.empty([500,2304])
+    deltas = np.empty([500,1])
     w = aug_w[:-1]
     b = aug_w[-1]
     for t in range(T):
         g, delta = gradient_regularized(train_images, train_values, w, b, alpha)
+        if (t + 1) % 10 == 0 or t == 0:
+            record_w[(t+1)//10] = w
+            deltas[(t+1)//10] = delta
+            print(np.average(g), delta)
         w = w - e * g
         b = b - e * delta
-        print(np.average(g))
-
+        
+    np.save("weights_reg", record_w)
+    np.save("deltas_reg", deltas)
+    
     aug_w = np.hstack((w, b))
     predicts_regularized(train_images, test_images, train_values, test_values, aug_w, alpha)
 
