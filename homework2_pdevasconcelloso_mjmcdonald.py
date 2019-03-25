@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def find_cost(predict, actual):
     diff_squared = np.square(predict - actual)
     return np.average(diff_squared) / 2
@@ -11,9 +10,11 @@ def calc_prediction(X, aug_w):
     b = aug_w[-1]
     pred = X.dot(w) + b
     return pred
-    
+
+
 def augment(X):
     return np.hstack((X, np.transpose(np.atleast_2d(np.ones(X.shape[0])))))
+
 
 def one_shot(train_images, test_images, train_values, test_values):
     aug_train_images = augment(train_images)
@@ -27,6 +28,12 @@ def one_shot(train_images, test_images, train_values, test_values):
     print("Analytical: \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
+
+
+def generate_weights():
+    sigma = 0.01 ** 0.5
+    mu = 0.5
+    return sigma * np.random.randn(48*48+1) + mu
 
 
 if __name__ == "__main__":
