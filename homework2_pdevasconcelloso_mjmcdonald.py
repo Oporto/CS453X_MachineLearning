@@ -49,6 +49,7 @@ def predicts(train_images, test_images, train_values, test_values, aug_w, name):
     plt.imshow(im, cmap='gray')
     plt.title(name)
     plt.show()
+    return train_pred, test_pred
 
 
 def predicts_regularized(train_images, test_images, train_values, test_values, aug_w, alpha):
@@ -68,6 +69,7 @@ def predicts_regularized(train_images, test_images, train_values, test_values, a
     plt.imshow(im, cmap='gray')
     plt.title("regularized")
     plt.show()
+    return train_pred, test_pred
     
 
 def augment(X):
@@ -79,7 +81,7 @@ def one_shot(train_images, test_images, train_values, test_values):
     A = np.transpose(aug_train_images).dot(aug_train_images)
     b = np.transpose(aug_train_images).dot(np.transpose(train_values))
     aug_w = np.linalg.solve(A,b)
-    predicts(train_images, test_images, train_values, test_values, aug_w, "one_shot")
+    return predicts(train_images, test_images, train_values, test_values, aug_w, "one_shot")
 
 
 def gradient_descent(T, e, train_images, test_images, train_values, test_values):
@@ -93,7 +95,7 @@ def gradient_descent(T, e, train_images, test_images, train_values, test_values)
         b = b - e*delta
         
     aug_w = np.hstack((w,b))
-    predicts(train_images, test_images, train_values, test_values, aug_w, "gradient_descent")
+    return predicts(train_images, test_images, train_values, test_values, aug_w, "gradient_descent")
 
 
 def gradient_descent_regularized(T, e, alpha, train_images, test_images, train_values, test_values):
@@ -115,7 +117,7 @@ def gradient_descent_regularized(T, e, alpha, train_images, test_images, train_v
     #np.save("deltas_reg", deltas)
     
     aug_w = np.hstack((w, b))
-    predicts_regularized(train_images, test_images, train_values, test_values, aug_w, alpha)
+    return predicts_regularized(train_images, test_images, train_values, test_values, aug_w, alpha)
 
 
 def generate_weights():
@@ -124,11 +126,24 @@ def generate_weights():
     return sigma * np.random.randn(48*48+1) + mu
 
 
+def show_five_worst(pred_values, test_values, test_images):
+    for i in range(5):
+        error = np.abs(test_values - pred_values)
+        index = np.argmax(error)
+        im = test_images[index]
+        im = im.reshape(48, 48)
+        plt.imshow(im, cmap='gray')
+        plt.title("worst #"+str(i+1)+": predicted "+str(pred_values[index])+" but was "+str(test_values[index]))
+        plt.show()
+        pred_values[index] = test_values[index]
+
+
 if __name__ == "__main__":
     train_images = np.load("age_Xtr.npy").reshape(-1, 2304)
     test_images = np.load("age_Xte.npy").reshape(-1, 2304)
     train_values = np.load("age_ytr.npy")
     test_values  = np.load("age_yte.npy")
-    one_shot(train_images, test_images, train_values, test_values)
-    gradient_descent(5000, 0.003, train_images, test_images, train_values, test_values)
-    gradient_descent_regularized(5000, 0.003, 1, train_images, test_images, train_values, test_values)
+    m1train, m1test = one_shot(train_images, test_images, train_values, test_values)
+    m2train, m2test = gradient_descent(5000, 0.003, train_images, test_images, train_values, test_values)
+    m3train, m3test = gradient_descent_regularized(5000, 0.003, 1, train_images, test_images, train_values, test_values)
+    # show_five_worst(m1test, test_values, test_images)
