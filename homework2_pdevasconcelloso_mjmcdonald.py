@@ -13,10 +13,18 @@ def calc_prediction(X, aug_w):
     return pred
     
     
-def gradient(X, y, w):
-    diff = X.dot(w) - y
-    return np.transpose(X).dot(diff) / X.shape[0]
-    
+def gradient(X, y, w, b):
+    diff = X.dot(w) + b - y
+    return np.transpose(X).dot(diff) / X.shape[0], np.average(diff)
+
+def predicts(train_images, test_images, train_values, test_values, aug_w):
+    train_pred = calc_prediction(train_images, aug_w)
+    test_pred = calc_prediction(test_images, aug_w)
+    train_cost = find_cost(train_pred, train_values)
+    test_cost = find_cost(test_pred, test_values)
+    print("Analytical: \n")
+    print("Train cost: ", train_cost)
+    print("Test cost: ", test_cost)
     
 def augment(X):
     return np.hstack((X, np.transpose(np.atleast_2d(np.ones(X.shape[0])))))
@@ -26,13 +34,18 @@ def one_shot(train_images, test_images, train_values, test_values):
     A = np.transpose(aug_train_images).dot(aug_train_images)
     b = np.transpose(aug_train_images).dot(np.transpose(train_values))
     aug_w = np.linalg.solve(A,b)
-    train_pred = calc_prediction(train_images, aug_w)
-    test_pred = calc_prediction(test_images, aug_w)
-    train_cost = find_cost(train_pred, train_values)
-    test_cost = find_cost(test_pred, test_values)
-    print("Analytical: \n")
-    print("Train cost: ", train_cost)
-    print("Test cost: ", test_cost)
+    predicts(train_images, test_images, train_values, test_values, aug_w)
+    
+def gradiant_descent(T, e, train_images, test_images, train_values, test_values):
+    aug_w = ##
+    w = aug_w[:,-1]
+    b = aug_w[-1]
+    for t in range(T):
+        g, delta = gradient(train_images, train_values, w, b)
+        w = w - e*g
+        b = b - e*delta
+    aug_w = w.append(b)
+    predicts(train_images, test_images, train_values, test_values, aug_w)
 
 
 if __name__ == "__main__":
