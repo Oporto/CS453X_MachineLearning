@@ -4,14 +4,12 @@ import numpy as np
 def find_cost(predict, actual):
     diff_squared = np.square(predict - actual)
     return np.average(diff_squared) / 2
-    
-def predict_one(x, w, b):
-    return np.transpose(x).dot(w) + b
+
     
 def calc_prediction(X, aug_w):
     w = aug_w[:-1]
     b = aug_w[-1]
-    pred = np.transpose(X).dot(w) + b
+    pred = X.dot(w) + b
     return pred
     
 def augment(X):
@@ -19,8 +17,8 @@ def augment(X):
 
 def one_shot(train_images, test_images, train_values, test_values):
     aug_train_images = augment(train_images)
-    A = aug_train_images.dot(np.transpose(aug_train_images))
-    b = aug_train_images.dot(np.transpose(train_values))
+    A = np.transpose(aug_train_images).dot(aug_train_images)
+    b = np.transpose(aug_train_images).dot(np.transpose(train_values))
     aug_w = np.linalg.solve(A,b)
     train_pred = calc_prediction(train_images, aug_w)
     test_pred = calc_prediction(test_images, aug_w)
