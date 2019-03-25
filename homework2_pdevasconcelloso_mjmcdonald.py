@@ -30,11 +30,12 @@ def gradient_regularized(X, y, w, b, alpha):
     unregularized = np.transpose(X).dot(np.transpose(diff)) / X.shape[0]
     return unregularized + (alpha / X.shape[0])*w, np.average(diff)
 
-def predicts(train_images, test_images, train_values, test_values, aug_w):
+def predicts(train_images, test_images, train_values, test_values, aug_w, name):
     train_pred = calc_prediction(train_images, aug_w)
     test_pred = calc_prediction(test_images, aug_w)
     train_cost = find_cost(train_pred, train_values)
     test_cost = find_cost(test_pred, test_values)
+    np.save(name, aug_w)
     print("Analytical: \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
@@ -45,6 +46,7 @@ def predicts_regularized(train_images, test_images, train_values, test_values, a
     test_pred = calc_prediction(test_images, aug_w)
     train_cost = find_cost_with_penalty(train_pred, train_values, aug_w, alpha)
     test_cost = find_cost_with_penalty(test_pred, test_values, aug_w, alpha)
+    np.save("regularized", aug_w)
     print("Analytical: \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
@@ -59,7 +61,7 @@ def one_shot(train_images, test_images, train_values, test_values):
     A = np.transpose(aug_train_images).dot(aug_train_images)
     b = np.transpose(aug_train_images).dot(np.transpose(train_values))
     aug_w = np.linalg.solve(A,b)
-    predicts(train_images, test_images, train_values, test_values, aug_w)
+    predicts(train_images, test_images, train_values, test_values, aug_w, "one_shot")
 
 
 def gradient_descent(T, e, train_images, test_images, train_values, test_values):
@@ -74,7 +76,7 @@ def gradient_descent(T, e, train_images, test_images, train_values, test_values)
         print(np.average(g))
         
     aug_w = np.hstack((w,b))
-    predicts(train_images, test_images, train_values, test_values, aug_w)
+    predicts(train_images, test_images, train_values, test_values, aug_w, "gradient_descent")
 
 
 def gradient_descent_regularized(T, e, alpha, train_images, test_images, train_values, test_values):
@@ -102,6 +104,6 @@ if __name__ == "__main__":
     test_images = np.load("age_Xte.npy").reshape(-1, 2304)
     train_values = np.load("age_ytr.npy")
     test_values  = np.load("age_yte.npy")
-    # one_shot(train_images, test_images, train_values, test_values)
-    # gradient_descent(5000, 0.003, train_images, test_images, train_values, test_values)
-    gradient_descent_regularized(5000, 0.003, 1, train_images, test_images, train_values, test_values)
+    one_shot(train_images, test_images, train_values, test_values)
+    gradient_descent(50, 0.003, train_images, test_images, train_values, test_values)
+    gradient_descent_regularized(50, 0.003, 1, train_images, test_images, train_values, test_values)
