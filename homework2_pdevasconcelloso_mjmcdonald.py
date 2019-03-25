@@ -73,4 +73,4 @@ if __name__ == "__main__":
     train_values = np.load("age_ytr.npy")
     test_values  = np.load("age_yte.npy")
     one_shot(train_images, test_images, train_values, test_values)
-    gradiant_descent(600, 0.003, train_images, test_images, train_values, test_values)
+    gradiant_descent(5000, 0.003, train_images, test_images, train_values, test_values)
