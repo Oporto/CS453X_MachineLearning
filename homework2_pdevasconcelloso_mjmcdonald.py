@@ -20,16 +20,31 @@ def calc_prediction(X, aug_w):
     return pred
 
     
-    
 def gradient(X, y, w, b):
     diff = X.dot(w) + b - y
     return np.transpose(X).dot(np.transpose(diff)) / X.shape[0], np.average(diff)
+
+
+def gradient_regularized(X, y, w, b, alpha):
+    diff = X.dot(w) + b - y
+    unregularized = np.transpose(X).dot(np.transpose(diff)) / X.shape[0]
+    return unregularized + (alpha / X.shape[0])*w, np.average(diff)
 
 def predicts(train_images, test_images, train_values, test_values, aug_w):
     train_pred = calc_prediction(train_images, aug_w)
     test_pred = calc_prediction(test_images, aug_w)
     train_cost = find_cost(train_pred, train_values)
     test_cost = find_cost(test_pred, test_values)
+    print("Analytical: \n")
+    print("Train cost: ", train_cost)
+    print("Test cost: ", test_cost)
+
+
+def predicts_regularized(train_images, test_images, train_values, test_values, aug_w, alpha):
+    train_pred = calc_prediction(train_images, aug_w)
+    test_pred = calc_prediction(test_images, aug_w)
+    train_cost = find_cost_with_penalty(train_pred, train_values, aug_w, alpha)
+    test_cost = find_cost_with_penalty(test_pred, test_values, aug_w, alpha)
     print("Analytical: \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
@@ -45,8 +60,9 @@ def one_shot(train_images, test_images, train_values, test_values):
     b = np.transpose(aug_train_images).dot(np.transpose(train_values))
     aug_w = np.linalg.solve(A,b)
     predicts(train_images, test_images, train_values, test_values, aug_w)
-    
-def gradiant_descent(T, e, train_images, test_images, train_values, test_values):
+
+
+def gradient_descent(T, e, train_images, test_images, train_values, test_values):
     aug_w = generate_weights()
     w = aug_w[:-1]
     b = aug_w[-1]
@@ -61,6 +77,20 @@ def gradiant_descent(T, e, train_images, test_images, train_values, test_values)
     predicts(train_images, test_images, train_values, test_values, aug_w)
 
 
+def gradient_descent_regularized(T, e, alpha, train_images, test_images, train_values, test_values):
+    aug_w = generate_weights()
+    w = aug_w[:-1]
+    b = aug_w[-1]
+    for t in range(T):
+        g, delta = gradient_regularized(train_images, train_values, w, b, alpha)
+        w = w - e * g
+        b = b - e * delta
+        print(np.average(g))
+
+    aug_w = np.hstack((w, b))
+    predicts_regularized(train_images, test_images, train_values, test_values, aug_w, alpha)
+
+
 def generate_weights():
     sigma = 0.01 ** 0.5
     mu = 0.5
@@ -72,5 +102,6 @@ if __name__ == "__main__":
     test_images = np.load("age_Xte.npy").reshape(-1, 2304)
     train_values = np.load("age_ytr.npy")
     test_values  = np.load("age_yte.npy")
-    one_shot(train_images, test_images, train_values, test_values)
-    gradiant_descent(5000, 0.003, train_images, test_images, train_values, test_values)
+    # one_shot(train_images, test_images, train_values, test_values)
+    # gradient_descent(5000, 0.003, train_images, test_images, train_values, test_values)
+    gradient_descent_regularized(5000, 0.003, 1, train_images, test_images, train_values, test_values)
