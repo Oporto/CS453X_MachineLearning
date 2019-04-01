@@ -79,25 +79,35 @@ def stochastic_gradient_descent(epochs, batch_size, epsilon, train_images,
                     aug_w, "SGD")
 
 
-def generate_noise(n):
-    return (0.05 * np.random.randn(784*n) + 1).reshape(n,784)
-        
+def generate_noise(l, n):
+    return (0.05 * np.random.randn(l * n) + 1).reshape(n, l)
+
+
 def generate_weights():
     sigma = 0.01**0.5
     mu = 0.5
     return (sigma * np.random.randn((28 * 28 + 1) * 10) + mu).reshape(
         10, 28 * 28 + 1)
-        
+
+
 def augment_rotation(X, labels):
-    X1 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28,28), 90), 1, X)
-    X2 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28,28), 180), 1, X)
-    X3 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28,28), 270), 1, X)
-    X_rots = np.vstack((X1,X2,X3))
+    X1 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 90), 1, X)
+    X2 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 180), 1,
+                             X)
+    X3 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 270), 1,
+                             X)
+    X_rots = np.vstack((X1, X2, X3))
     lab_rots = np.vstack((labels, labels, labels))
     return X_rots, lab_rots
-    
+
+
 def augment_noise(X, labels):
-    return np.multiply(X, generate_noise(X.shape[0])), labels
+    return np.multiply(X, generate_noise(784, X.shape[0])), labels
+
+
+def augment_translate_up(X, labels, offset):
+    X1 = np.apply_along_axis(lambda x: np.hstack((x[offset*28:], (generate_noise(28*offset,1) - 0.5).flatten())), 1, X )
+    return X1, labels
 
 
 if __name__ == "__main__":
