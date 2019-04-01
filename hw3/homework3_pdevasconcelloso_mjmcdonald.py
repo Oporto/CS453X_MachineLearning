@@ -81,7 +81,7 @@ def stochastic_gradient_descent(epochs, batch_size, epsilon, train_images,
 
 
 def generate_noise(l, n):
-    return (0.05 * np.random.randn(l * n) + 0.5).reshape(n, l)
+    return (0.05 * np.random.randn(l * n) + 1).reshape(n, l)
 
 
 def generate_weights():
@@ -92,7 +92,7 @@ def generate_weights():
 
 
 def augment_rotation(X, labels):
-    X_rot = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 25), 1, X)
+    X_rot = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 20), 1, X)
     X_rot = X_rot.reshape(-1, 784)
     return X_rot, labels
 
@@ -108,7 +108,7 @@ def augment_translate_up(X, labels, offset):
 
 def augment_scale(X, labels):
     X_scale = np.apply_along_axis(
-        lambda x: skt.resize(x.reshape(28, 28), (34, 34), mode='constant', anti_aliasing=False)[3:-3, 3:-3], 1, X)
+        lambda x: skt.resize(x.reshape(28, 28), (32, 32), mode='constant', anti_aliasing=False)[2:-2, 2:-2], 1, X)
     X_scale = X_scale.reshape(-1, 784)
     return X_scale, labels
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         100, 100, 0.1, train_images, test_images, train_values, test_values, "SGD")
 
     half = train_images.shape[0] // 2
-    translation, _ = augment_translate_up(train_images[:half], train_values[:half], 2)
+    translation, _ = augment_translate_up(train_images[:half], train_values[:half], 1)
     rotation, _ = augment_rotation(train_images[half:], train_values[half:])
     scaling, _ = augment_scale(train_images[:half], train_values[:half])
     noise, _ = augment_noise(train_images[half:], train_values[half:])
