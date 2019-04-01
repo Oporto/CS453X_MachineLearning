@@ -109,11 +109,28 @@ def augment_translate_up(X, labels, offset):
     X1 = np.apply_along_axis(lambda x: np.hstack((x[offset*28:], (generate_noise(28*offset,1) - 0.5).flatten())), 1, X )
     return X1, labels
 
-
+def print_sample(bef, aft, type):
+    plt.imshow(bef.reshape(28,28), cmap='gray')
+    plt.title("Before " + type)
+    plt.show()
+    plt.imshow(aft.reshape(28,28), cmap='gray')
+    plt.title("After " + type)
+    plt.show()
+    
 if __name__ == "__main__":
     train_images = np.load("small_mnist_train_images.npy").reshape(-1, 784)
     test_images = np.load("small_mnist_test_images.npy").reshape(-1, 784)
     train_values = np.load("small_mnist_train_labels.npy")
     test_values = np.load("small_mnist_test_labels.npy")
-    m3train, m3test = stochastic_gradient_descent(
-        100, 100, 0.1, train_images, test_images, train_values, test_values)
+    img = train_images[:1,:]
+    lab = train_values[:1,:]
+    img_noi, lab = augment_noise(img, lab)
+    img_tra, lab = augment_translate_up(img, lab, 3)
+    img_rot, lab = augment_rotation(img, lab)
+    img_scl, lab = augment_scale(img, lab)
+    print_sample(img[0,:], img_noi[0,:], "noise")
+    print_sample(img[0,:], img_tra[0,:], "translation")
+    print_sample(img[0,:], img_rot[0,:], "rotation")
+    print_sample(img[0,:], img_scl[0,:], "scale")
+    #m3train, m3test = stochastic_gradient_descent(
+        #100, 100, 0.1, train_images, test_images, train_values, test_values)
