@@ -14,7 +14,11 @@ def calc_prediction(aug_X, aug_w):
     pred = np.transpose(z) / total.flatten()
     return np.transpose(pred)
 
-    
+def percent_correct(predict, actual):
+    pred = np.argmax(predict, axis=1)
+    act = np.argmax(actual,axis=1)
+    bool_arr = np.equal(pred, act)
+    return np.sum(bool_arr) / bool_arr.shape[0]
     
 def gradient(X, y, w, b):
     aug_w = np.transpose(np.vstack((np.transpose(w),b)))
@@ -33,6 +37,7 @@ def predicts(train_images, test_images, train_values, test_values, aug_w, name):
     print(name+": \n")
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
+    print("Testing % correct", percent_correct(test_pred, test_values))
 
     return train_pred, test_pred
 
