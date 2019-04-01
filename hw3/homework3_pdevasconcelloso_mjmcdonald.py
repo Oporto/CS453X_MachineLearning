@@ -79,6 +79,9 @@ def stochastic_gradient_descent(epochs, batch_size, epsilon, train_images,
                     aug_w, "SGD")
 
 
+def generate_noise(n):
+    return (0.05 * np.random.randn(784*n) + 1).reshape(n,784)
+        
 def generate_weights():
     sigma = 0.01**0.5
     mu = 0.5
@@ -93,6 +96,8 @@ def augment_rotation(X, labels):
     lab_rots = np.vstack((labels, labels, labels))
     return X_rots, lab_rots
     
+def augment_noise(X, labels):
+    return np.multiply(X, generate_noise(X.shape[0])), labels
 
 
 if __name__ == "__main__":
