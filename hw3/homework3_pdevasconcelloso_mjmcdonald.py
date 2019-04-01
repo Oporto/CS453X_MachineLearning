@@ -39,10 +39,11 @@ def predicts(train_images, test_images, train_values, test_values, aug_w,
     train_cost = find_cost(train_pred, train_values)
     test_cost = find_cost(test_pred, test_values)
     np.save(name, aug_w)
-    print(name + ": \n")
+    print(name)
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
     print("Testing % correct", percent_correct(test_pred, test_values))
+    print()
 
     return train_pred, test_pred
 
@@ -52,7 +53,7 @@ def augment(X):
 
 
 def stochastic_gradient_descent(epochs, batch_size, epsilon, train_images,
-                                test_images, train_values, test_values):
+                                test_images, train_values, test_values, name):
     aug_w = generate_weights()
     w = aug_w[:, :-1]
     b = aug_w[:, -1]
@@ -76,11 +77,11 @@ def stochastic_gradient_descent(epochs, batch_size, epsilon, train_images,
 
     aug_w = np.transpose(np.vstack((np.transpose(w), b)))
     return predicts(train_images, test_images, train_values, test_values,
-                    aug_w, "SGD")
+                    aug_w, name)
 
 
 def generate_noise(l, n):
-    return (0.05 * np.random.randn(l * n) + 1).reshape(n, l)
+    return (0.05 * np.random.randn(l * n) + 0.5).reshape(n, l)
 
 
 def generate_weights():
@@ -91,14 +92,9 @@ def generate_weights():
 
 
 def augment_rotation(X, labels):
-    X1 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 90), 1, X)
-    X2 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 180), 1,
-                             X)
-    X3 = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 270), 1,
-                             X)
-    X_rots = np.vstack((X1, X2, X3))
-    lab_rots = np.vstack((labels, labels, labels))
-    return X_rots, lab_rots
+    X_rot = np.apply_along_axis(lambda x: skt.rotate(x.reshape(28, 28), 25), 1, X)
+    X_rot = X_rot.reshape(-1, 784)
+    return X_rot, labels
 
 
 def augment_noise(X, labels):
@@ -110,10 +106,28 @@ def augment_translate_up(X, labels, offset):
     return X1, labels
 
 
+def augment_scale(X, labels):
+    X_scale = np.apply_along_axis(
+        lambda x: skt.resize(x.reshape(28, 28), (34, 34), mode='constant', anti_aliasing=False)[3:-3, 3:-3], 1, X)
+    X_scale = X_scale.reshape(-1, 784)
+    return X_scale, labels
+
 if __name__ == "__main__":
     train_images = np.load("small_mnist_train_images.npy").reshape(-1, 784)
     test_images = np.load("small_mnist_test_images.npy").reshape(-1, 784)
     train_values = np.load("small_mnist_train_labels.npy")
     test_values = np.load("small_mnist_test_labels.npy")
-    m3train, m3test = stochastic_gradient_descent(
-        100, 100, 0.1, train_images, test_images, train_values, test_values)
+    normal_train, normal_test = stochastic_gradient_descent(
+        100, 100, 0.1, train_images, test_images, train_values, test_values, "SGD")
+
+    half = train_images.shape[0] // 2
+    translation, _ = augment_translate_up(train_images[:half], train_values[:half], 2)
+    rotation, _ = augment_rotation(train_images[half:], train_values[half:])
+    scaling, _ = augment_scale(train_images[:half], train_values[:half])
+    noise, _ = augment_noise(train_images[half:], train_values[half:])
+
+    aug_train_images = np.vstack((train_images, translation, rotation, scaling, noise))
+    aug_train_values = np.vstack((train_values, train_values, train_values))
+    aug_train, aug_test = stochastic_gradient_descent(
+        100, 100, 0.1, aug_train_images, test_images, aug_train_values, test_values, "AUG_SGD")
+
