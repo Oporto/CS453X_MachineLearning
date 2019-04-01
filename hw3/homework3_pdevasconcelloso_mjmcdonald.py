@@ -3,15 +3,15 @@ import matplotlib.pyplot as plt
 
 
 def find_cost(predict, actual, n):
-    prod = actual.dot(np.log(predict))
+    prod = np.multiply(actual, np.transpose(np.log(predict)))
     k_summed = prod.sum(axis=1)
     return np.average(k_summed)
     
 def calc_prediction(aug_X, aug_w):
-    z = np.exp(aug_X.dot(aug_w))
+    z = np.exp(aug_X.dot(np.transpose(aug_w)))
     total = z.sum(axis=1)
-    pred = z / total
-    return pred
+    pred = np.transpose(z) / total.flatten()
+    return np.transpose(pred)
 
     
 def gradient(X, y, w, b):
