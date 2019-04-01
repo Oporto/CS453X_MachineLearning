@@ -112,6 +112,14 @@ def augment_scale(X, labels):
     X_scale = X_scale.reshape(-1, 784)
     return X_scale, labels
 
+def print_sample(bef, aft, type):
+    plt.imshow(bef.reshape(28,28), cmap='gray')
+    plt.title("Before " + type)
+    plt.show()
+    plt.imshow(aft.reshape(28,28), cmap='gray')
+    plt.title("After " + type)
+    plt.show()
+
 if __name__ == "__main__":
     train_images = np.load("small_mnist_train_images.npy").reshape(-1, 784)
     test_images = np.load("small_mnist_test_images.npy").reshape(-1, 784)
