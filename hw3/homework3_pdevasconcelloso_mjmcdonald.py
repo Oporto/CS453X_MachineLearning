@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 
-def find_cost(predict, actual, n):
-    prod = np.multiply(actual, np.transpose(np.log(predict)))
+def find_cost(predict, actual):
+    prod = np.multiply(actual, np.log(predict))
     k_summed = prod.sum(axis=1)
-    return np.average(k_summed)
+    return - np.average(k_summed)
     
 def calc_prediction(aug_X, aug_w):
     z = np.exp(aug_X.dot(np.transpose(aug_w)))
@@ -14,16 +15,18 @@ def calc_prediction(aug_X, aug_w):
     return np.transpose(pred)
 
     
+    
 def gradient(X, y, w, b):
-    y_hat = calc_prediction(augment(X), np.hstack((w, b)))
-    gradient = X * (y_hat - y) / X.shape[0]
-    delta = np.average(gradient)
-    return gradient, delta
+    aug_w = np.transpose(np.vstack((np.transpose(w),b)))
+    y_hat = calc_prediction(augment(X), aug_w)
+    gradient = np.transpose(X).dot((y_hat - y)) / X.shape[0]
+    delta = np.mean(gradient, axis=0).flatten()
+    return np.transpose(gradient), delta
 
 
 def predicts(train_images, test_images, train_values, test_values, aug_w, name):
-    train_pred = calc_prediction(train_images, aug_w)
-    test_pred = calc_prediction(test_images, aug_w)
+    train_pred = calc_prediction(augment(train_images), aug_w)
+    test_pred = calc_prediction(augment(test_images), aug_w)
     train_cost = find_cost(train_pred, train_values)
     test_cost = find_cost(test_pred, test_values)
     np.save(name, aug_w)
@@ -31,11 +34,6 @@ def predicts(train_images, test_images, train_values, test_values, aug_w, name):
     print("Train cost: ", train_cost)
     print("Test cost: ", test_cost)
 
-    im = aug_w[0:-1]
-    im = im.reshape(48, 48)
-    plt.imshow(im, cmap='gray')
-    plt.title(name)
-    plt.show()
     return train_pred, test_pred
 
     
@@ -46,8 +44,8 @@ def augment(X):
 
 def stochastic_gradient_descent(epochs, batch_size, epsilon, train_images, test_images, train_values, test_values):
     aug_w = generate_weights()
-    w = aug_w[:-1]
-    b = aug_w[-1]
+    w = aug_w[:,:-1]
+    b = aug_w[:,-1]
     N = train_images.shape[0]
 
     train_fused = np.hstack((train_images, train_values))
@@ -64,14 +62,14 @@ def stochastic_gradient_descent(epochs, batch_size, epsilon, train_images, test_
             w = w - epsilon*g
             b = b - epsilon*delta
 
-    aug_w = np.hstack((w, b))
-    return predicts(train_images, test_images, train_values, test_values, aug_w)
+    aug_w = np.transpose(np.vstack((np.transpose(w),b)))
+    return predicts(train_images, test_images, train_values, test_values, aug_w, "SGD")
 
 
 def generate_weights():
     sigma = 0.01 ** 0.5
     mu = 0.5
-    return sigma * np.random.randn(24*24+1) + mu
+    return (sigma * np.random.randn((28*28+1)*10) + mu).reshape(10,28*28+1)
 
 
 if __name__ == "__main__":
