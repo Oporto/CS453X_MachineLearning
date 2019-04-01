@@ -1,28 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import math
-import sys
 
 
-def find_cost(predict, actual):
-    diff_squared = np.square(predict - actual)
-    return np.average(diff_squared) / 2
-
-
-def find_cost_with_penalty(predict, actual, weight, alpha):
-    diff_squared = np.square(predict - actual)
-    old_cost = np.average(diff_squared) / 2
-    penalty_term = (alpha / (2*len(actual)))*weight*np.transpose(weight)
-    return np.average(old_cost + penalty_term)
-
-def find_rmse(predict, actual):
-    return np.sqrt(np.square(predict - actual)).mean()
+def find_cost(predict, actual, n):
+    prod = np.multiply(actual, np.transpose(np.log(predict)))
+    k_summed = prod.sum(axis=1)
+    return np.average(k_summed)
     
-def calc_prediction(X, aug_w):
-    w = aug_w[:-1]
-    b = aug_w[-1]
-    pred = X.dot(w) + b
-    return pred
+def calc_prediction(aug_X, aug_w):
+    z = np.exp(aug_X.dot(np.transpose(aug_w)))
+    total = z.sum(axis=1)
+    pred = np.transpose(z) / total.flatten()
+    return np.transpose(pred)
 
     
 def gradient(X, y, w, b):
@@ -48,6 +37,7 @@ def predicts(train_images, test_images, train_values, test_values, aug_w, name):
     plt.title(name)
     plt.show()
     return train_pred, test_pred
+
     
 
 def augment(X):
