@@ -2,12 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="62ddc4b6-328a-42fa-bfe8-ecf980f63023" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw3/AUG_SGD.npy" beforeDir="false" afterPath="$PROJECT_DIR$/hw3/AUG_SGD.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw3/SGD.npy" beforeDir="false" afterPath="$PROJECT_DIR$/hw3/SGD.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.docx" beforeDir="false" afterPath="$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.docx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.py" beforeDir="false" afterPath="$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw3/~$mework3_pdevasconcelloso_mjmcdonald.docx" beforeDir="false" afterPath="$PROJECT_DIR$/hw3/~$mework3_pdevasconcelloso_mjmcdonald.docx" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="578">
-              <caret line="118" column="56" lean-forward="true" selection-start-line="118" selection-start-column="56" selection-end-line="118" selection-end-column="56" />
+            <state relative-caret-position="782">
+              <caret line="126" column="56" selection-start-line="126" selection-start-column="56" selection-end-line="126" selection-end-column="56" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -145,12 +140,12 @@
       <workItem from="1552948022774" duration="8755000" />
       <workItem from="1553479600763" duration="1634000" />
       <workItem from="1554082910978" duration="3570000" />
-      <workItem from="1554146958292" duration="6199000" />
+      <workItem from="1554146958292" duration="6702000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="30088000" />
+    <option name="totallyTimeSpent" value="30591000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1728" height="1117" extended-state="6" />
@@ -200,8 +195,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="578">
-          <caret line="118" column="56" lean-forward="true" selection-start-line="118" selection-start-column="56" selection-end-line="118" selection-end-column="56" />
+        <state relative-caret-position="782">
+          <caret line="126" column="56" selection-start-line="126" selection-start-column="56" selection-end-line="126" selection-end-column="56" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
