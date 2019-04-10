@@ -3,14 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="62ddc4b6-328a-42fa-bfe8-ecf980f63023" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw2/gradient_descent.npy" beforeDir="false" afterPath="$PROJECT_DIR$/hw2/gradient_descent.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw2/homework2_pdevasconcelloso_mjmcdonald.docx" beforeDir="false" afterPath="$PROJECT_DIR$/hw2/homework2_pdevasconcelloso_mjmcdonald.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw2/homework2_pdevasconcelloso_mjmcdonald.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/hw2/homework2_pdevasconcelloso_mjmcdonald.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw2/homework2_pdevasconcelloso_mjmcdonald.py" beforeDir="false" afterPath="$PROJECT_DIR$/hw2/homework2_pdevasconcelloso_mjmcdonald.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw2/regularized.npy" beforeDir="false" afterPath="$PROJECT_DIR$/hw2/regularized.npy" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw3/~$mework3_pdevasconcelloso_mjmcdonald.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw3/~WRL0005.tmp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/hw4/homework4_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/hw4/homework4_template.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hw4/homework4_santander_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/hw4/homework4_santander_template.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,11 +25,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/hw4/homework4_template.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="28" column="94" selection-start-line="28" selection-start-column="94" selection-end-line="28" selection-end-column="94" />
+            <state relative-caret-position="629">
+              <caret line="70" column="43" lean-forward="true" selection-start-line="70" selection-start-column="43" selection-end-line="70" selection-end-column="49" />
               <folding>
                 <element signature="e#0#34#0" expanded="true" />
               </folding>
@@ -44,10 +37,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/hw4/homework4_santander_template.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="391">
+              <caret line="23" lean-forward="true" selection-start-line="23" selection-end-line="23" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -80,6 +74,7 @@
         <option value="$PROJECT_DIR$/homework2_pdevasconcelloso_mjmcdonald.py" />
         <option value="$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.py" />
         <option value="$PROJECT_DIR$/hw4/homework4_template.py" />
+        <option value="$PROJECT_DIR$/hw4/homework4_santander_template.py" />
       </list>
     </option>
   </component>
@@ -173,12 +168,12 @@
       <workItem from="1553479600763" duration="1634000" />
       <workItem from="1554082910978" duration="3570000" />
       <workItem from="1554146958292" duration="7000000" />
-      <workItem from="1554915497349" duration="7403000" />
+      <workItem from="1554915497349" duration="10260000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="38292000" />
+    <option name="totallyTimeSpent" value="41149000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1728" height="1117" extended-state="6" />
@@ -226,15 +221,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/hw4/homework4_santander_template.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/hw3/homework3_pdevasconcelloso_mjmcdonald.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-238">
@@ -247,10 +233,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/hw4/homework4_template.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="28" column="94" selection-start-line="28" selection-start-column="94" selection-end-line="28" selection-end-column="94" />
+        <state relative-caret-position="629">
+          <caret line="70" column="43" lean-forward="true" selection-start-line="70" selection-start-column="43" selection-end-line="70" selection-end-column="49" />
           <folding>
             <element signature="e#0#34#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hw4/homework4_santander_template.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="23" lean-forward="true" selection-start-line="23" selection-end-line="23" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
           </folding>
         </state>
       </provider>
