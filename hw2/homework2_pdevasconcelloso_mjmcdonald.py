@@ -93,6 +93,7 @@ def gradient_descent(T, e, train_images, test_images, train_values, test_values)
         g, delta = gradient(train_images, train_values, w, b)
         w = w - e*g
         b = b - e*delta
+        print(t,"/",T)
         
     aug_w = np.hstack((w,b))
     return predicts(train_images, test_images, train_values, test_values, aug_w, "gradient_descent")
@@ -112,6 +113,8 @@ def gradient_descent_regularized(T, e, alpha, train_images, test_images, train_v
             print(np.average(g), delta)'''
         w = w - e * g
         b = b - e * delta
+        print("reg", t,"/",T)
+
         
     #np.save("weights_reg", record_w)
     #np.save("deltas_reg", deltas)

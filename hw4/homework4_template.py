@@ -11,9 +11,9 @@ class SVM453X ():
     # y should correspondingly be an n-vector of labels (-1 or +1).
     def fit (self, X, y):
         # TODO change these -- they should be matrices or vectors
-        G = 0
         P = 0
         q = 0
+        G = 0
         h = 0
 
         # Solve -- if the variables above are defined correctly, you can call this as-is:
@@ -25,7 +25,12 @@ class SVM453X ():
 
     # Given a 2-D matrix of examples X, output a vector of predicted class labels
     def predict (self, x):
-        return 0  # TODO fix
+        aug_x = np.hstack((x, np.transpose(np.atleast_2d(np.ones(x.shape[0])))))
+        aug_w = np.hstack((self.w, self.b)) # TODO might be wrong depending on shape of self.x
+        z = np.exp(aug_x.dot(np.transpose(aug_w)))
+        total = z.sum(axis=1)
+        pred = np.transpose(z) / total.flatten()
+        return np.transpose(pred)
 
 def test1 ():
     # Set up toy problem
