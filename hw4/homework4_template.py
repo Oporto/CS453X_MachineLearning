@@ -10,32 +10,29 @@ class SVM453X ():
     # contain n rows, where n is the number of examples.
     # y should correspondingly be an n-vector of labels (-1 or +1).
     def fit (self, X, y):
-
-        n_features = X.shape[1]
-        n_samples = y.shape[0]
-        G = np.diag(y).dot(X)
-        P = np.identity(n_features)
-        P[-1,-1] = 0
-        q = np.zeros(n_features)
-        h = -1 * np.ones(n_samples)
-        print(G, P, q, h)
-        try:
-            sol = solvers.qp(matrix(P, tc='d'), matrix(q, tc='d'), matrix(G, tc='d'), matrix(h, tc='d'))
-        except:
-            print("Its not ok")
-        alphas = np.array(sol['x']).squeeze()
-        self.w = np.sum(alphas * y[:,None] * X, axis=0)
-        supp_vectors = (alphas > 1e-4).reshape(-1)
-        vec = supp_vectors[0]
-        self.b = y[vec] - x[vec].dot(self.w)
+            
+        X_aug = np.transpose(np.vstack((np.transpose(X), np.ones(X.shape[0]))))
+        Y_rep = np.repeat(np.transpose(np.array([y])), X.shape[1] + 1, axis=1)
+        
+        G = X_aug * Y_rep
+        P = np.eye(G.shape[1])
+        P[-1, -1] = 0
+        q = np.zeros(P.shape[0])
+        h = np.ones(G.shape[0]) * (-1)
+        
+        sol = solvers.qp(matrix(P, tc='d'), matrix(q, tc='d'), matrix(G, tc='d'), matrix(h, tc='d'))
+        
+        sols = sol['x']
+        self.w = sols[:-1]
+        self.b = sols[-1]
 
     # Given a 2-D matrix of examples X, output a vector of predicted class labels
-    def predict (self, x):
-        aug_x = np.hstack((x, np.transpose(np.atleast_2d(np.ones(x.shape[0])))))
-        aug_w = np.hstack((self.w, self.b)) # TODO might be wrong depending on shape of self.x
-        z = np.exp(aug_x.dot(np.transpose(aug_w)))
-        total = z.sum(axis=1)
-        pred = np.transpose(z) / total.flatten()
+    def predict (self, X):
+        X_aug = np.transpose(np.vstack((np.transpose(X), np.ones(X.shape[0]))))
+        W_aug = np.vstack((self.w, self.b)) # TODO might be wrong depending on shape of self.x
+        Z = np.exp(X_aug.dot(W_aug))
+        total = Z.sum(axis=1)
+        pred = np.transpose(Z) / total.flatten()
         return np.transpose(pred)
 
 def test1 ():
