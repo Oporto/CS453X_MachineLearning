@@ -15,10 +15,10 @@ class SVM453X ():
         Y_rep = np.repeat(np.transpose(np.array([y])), X.shape[1] + 1, axis=1)
         
         G = X_aug * Y_rep
-        P = np.eye(G.shape[1])
+        P = np.eye(X_aug.shape[1])
         P[-1, -1] = 0
-        q = np.zeros(P.shape[0])
-        h = np.ones(G.shape[0]) * (-1)
+        q = np.zeros(X_aug.shape[1])
+        h = np.ones(X_aug.shape[0]) * (-1)
         
         sol = solvers.qp(matrix(P, tc='d'), matrix(q, tc='d'), matrix(G, tc='d'), matrix(h, tc='d'))
         
