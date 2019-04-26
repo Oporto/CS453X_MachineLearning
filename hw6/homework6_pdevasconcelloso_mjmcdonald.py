@@ -5,7 +5,7 @@ import scipy.optimize
 import math
 
 NUM_INPUT = 784  # Number of input neurons
-NUM_HIDDEN = 40  # Number of hidden neurons
+NUM_HIDDEN = 50  # Number of hidden neurons
 NUM_OUTPUT = 10  # Number of output neurons
 NUM_CHECK = 5  # Number of examples on which to check the gradient
 
@@ -27,10 +27,11 @@ def unpack(w):
 # return a vector w containing all of them.
 # This is useful for performing a gradient check with check_grad.
 def pack(W1, b1, W2, b2):
+    # print(W1.shape, b1.shape, W2.shape, b2.shape)
     # 784x40, 40x1, 40x10, 10x1
     W1b1 = np.vstack((W1, b1))  # 785x40
     W1b1W2 = np.vstack((W1b1, W2.T))  # 795x40
-    b2z = np.hstack((b2, np.zeros(NUM_HIDDEN - NUM_OUTPUT)))  # 40x1
+    b2z = np.hstack((b2, np.zeros(W1.shape[1] - 10)))  # 40x1
     packed = np.vstack((W1b1W2, b2z))  # 796x40
     return packed
 
@@ -158,8 +159,8 @@ def findBestHyperparameters():
         [40, 0.1, 25, 5, 0.01],
         [40, 0.001, 50, 10, 0.001],
         [40, 0.05, 75, 5, 0.001],
-        [50, 0.01, 75, 5, 0.01],
-        [50, 0.1, 25, 10, 0.1],
+        [50, 0.1, 75, 5, 0.01],
+        [50, 0.01, 25, 10, 0.1],
         [50, 0.001, 50, 5, 0.1],
         [30, 0.01, 25, 5, 0.01],
         [30, 0.1, 50, 5, 0.1],
@@ -168,7 +169,7 @@ def findBestHyperparameters():
 
     validationX, validationY = loadData("validation")
 
-    for test in tests:
+    for index, test in enumerate(tests):
         hidden_layer, learning_rate, minibatch_size, epoch_count, regularization_str = test
         # apply settings as necessary
         W1 = 2 * (np.random.random(size=(NUM_INPUT, hidden_layer)) / NUM_INPUT ** 0.5) - 1. / NUM_INPUT ** 0.5
@@ -181,12 +182,13 @@ def findBestHyperparameters():
         ws = train(epoch_count, minibatch_size, learning_rate, trainX, trainY, validationX, validationY, w)
         ce = fCE(validationX, validationY, w)
 
-        test_results[test] = ce
-    best_config = tests[0]
-    for config in tests[1:]:
-        if (test_results[config] < test_results[best_config]):
-            best_config = config
-    return best_config, test_results[best_config]
+        test_results[index] = ce
+
+    best_config = 0
+    for i in range(10):
+        if (test_results[i] < test_results[best_config]):
+            best_config = i
+    return tests[best_config], test_results[best_config]
 
 
 if __name__ == "__main__":
@@ -212,12 +214,15 @@ if __name__ == "__main__":
     # Check that the gradient is correct on just a few examples (randomly drawn).
     idxs = np.random.permutation(trainX.shape[0])[0:NUM_CHECK]
     
-    print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
-                                    lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
-                                    w))
+    # print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
+    #                                 lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
+    #                                 w))
     
     # Train the network and obtain the sequence of w's obtained using SGD.
-    ws = train(6, 32, 0.01, trainX, trainY, testX, testY, w)
+    ws = train(10, 25, 0.01, trainX, trainY, testX, testY, w)
+
+    # best result: [50, 0.01, 25, 10, 0.1],
+    print(findBestHyperparameters())
 
     # Plot the SGD trajectory
     # plotSGDPath(trainX, trainY, ws)
