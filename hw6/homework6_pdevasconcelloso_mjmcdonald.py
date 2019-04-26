@@ -37,7 +37,7 @@ def pack(W1, b1, W2, b2):
 
 # Load the images and labels from a specified dataset (train or test).
 def loadData(which):
-    images = np.load("mnist_{}_images.npy".format(which))
+    images = np.load("mnist_{}_images.npy".format(which)).T
     labels = np.load("mnist_{}_labels.npy".format(which))
     return images, labels
 
@@ -73,7 +73,7 @@ def plotSGDPath(trainX, trainY, ws):
 # want to extend this function to return multiple arguments (in which case you
 # will also need to modify slightly the gradient check code below).
 def fCE(X, Y, w):
-    Y_hat = calc_prediction(X, w)
+    __, __, Y_hat = calc_prediction(X, w)
     prod = np.multiply(Y,np.log(Y_hat))
     k_summed = prod.sum(axis=1)
     return -1*np.average(k_summed)
@@ -82,7 +82,7 @@ def fCE(X, Y, w):
 
 # convenience helper to calculate z1 or z2 during prediction
 def calc_z(w, x, b):
-    return np.add(w.T.dot(x.T).T, b)
+    return np.add(w.T.dot(x).T, b)
 
 
 def relu(x):
@@ -96,10 +96,8 @@ def relu_prime(x):
 
 
 def softmax(x):
-    print(x.shape)
     exp = np.exp(x)
     sum = np.sum(exp, axis=1)
-    print(sum.shape)
     return np.divide(exp.T, sum).T
 
 
@@ -108,7 +106,7 @@ def calc_prediction(X, w):
     # 784x40, 40x1, 40x10, 10x1
     z1 = calc_z(W1, X, b1)  # 40*N
     h1 = relu(z1)  # 40*N
-    z2 = calc_z(W2, h1, b2)
+    z2 = calc_z(W2, h1.T, b2)
     y_hat = softmax(z2)
     return z1, h1, y_hat
 
@@ -126,23 +124,22 @@ def gradCE(X, Y, w):
 
     grad_W2 = np.dot(np.transpose(y_hat - Y), h1)
     grad_b2 = np.average(y_hat - Y, axis=0)
-    grad_W1 = np.dot(g_t, X)
+    grad_W1 = np.dot(g_t, X.T)
     grad_b1 = np.average(g_t.T, axis=0)
-    print(grad_W1.shape, grad_b1.shape, grad_W2.shape, grad_b2.shape)
     return pack(grad_W1.T, grad_b1.T, grad_W2.T, grad_b2.T)
 
 
 # Given training and testing datasets and an initial set of weights/biases b,
 # train the NN. Then return the sequence of w's obtained during SGD.
 def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
-    train_fused = np.hstack((trainX, trainY))
+    train_fused = np.hstack((trainX.T, trainY))
     np.random.shuffle(train_fused)
-    train_images = train_fused[:, :-10]
+    train_images = train_fused[:, :-10].T
     train_values = train_fused[:, -10:]
 
     for epoch in range(epochs):
         for round in range(math.ceil(train_images.shape[0] / batch_size)):
-            sample_img = train_images[round * batch_size:(round + 1) *
+            sample_img = train_images[:,round * batch_size:(round + 1) *
                                                          batch_size]
             sample_val = train_values[round * batch_size:(round + 1) *
                                                          batch_size]
@@ -214,10 +211,11 @@ if __name__ == "__main__":
 
     # Check that the gradient is correct on just a few examples (randomly drawn).
     idxs = np.random.permutation(trainX.shape[0])[0:NUM_CHECK]
-    print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[idxs,:]), np.atleast_2d(trainY[idxs,:]), w_),
-                                    lambda w_: gradCE(np.atleast_2d(trainX[idxs,:]), np.atleast_2d(trainY[idxs,:]), w_),
+    
+    print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
+                                    lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
                                     w))
-
+    
     # Train the network and obtain the sequence of w's obtained using SGD.
     ws = train(6, 32, 0.01, trainX, trainY, testX, testY, w)
 
