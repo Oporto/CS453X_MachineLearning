@@ -43,12 +43,9 @@ def loadData(which):
     labels = np.load("mnist_{}_labels.npy".format(which))
     return images, labels
 
-def findCost (trainX, trainY, dx1, dx2, ws, ipca):
-    altered = np.apply_along_axis(lambda w: w_vary(w,dx1,dx2), 0, ws)
-    print(altered.shape)
-    ws = ipca.inverse_transform(altered)
-    print(ws.shape)
-    return np.apply_along_axis(lambda w: fCE(trainX,trainY,w.reshape(796,40)), 0, ws)
+def findCost (trainX, trainY, ipca, x1, x2):
+    w = ipca.inverse_transform(np.array([x1,x2])).reshape(796,40)
+    return fCE(trainX,trainY,w)
 
 def plotSGDPath(trainX, trainY, ws):
 
@@ -61,16 +58,21 @@ def plotSGDPath(trainX, trainY, ws):
     # Compute the CE loss on a grid of points (corresonding to different w).
     axis1 = np.arange(-np.pi, +np.pi, 0.05)  # Just an example
     axis2 = np.arange(-np.pi, +np.pi, 0.05)  # Just an example
+    axis1 = np.add(axis1, reduced_w[-1][0])
+    axis2 = np.add(axis2, reduced_w[-1][1])
     Xaxis, Yaxis = np.meshgrid(axis1, axis2)
+    find_vect_cost = np.vectorize(findCost, excluded=[0,1,2])
+    Zaxis = find_vect_cost(trainX, trainY, ipca, Xaxis, Yaxis)
     print(Xaxis.shape, Yaxis.shape)
     print(Xaxis[1,1])
-    Zaxis = np.apply_along_axis(lambda i: np.apply_along_axis(lambda j: findCost(trainX, trainY, Xaxis[i,j], Yaxis[i,j], reduced_w[-1], ipca), 0, np.arange(len(axis2))), 0, np.arange(len(axis1))).reshape(len(axis1), len(axis2))
+    print(Zaxis.shape)
     ax.plot_surface(Xaxis, Yaxis, Zaxis, alpha=0.6)  # Keep alpha < 1 so we can see the scatter plot too.
 
     # Now superimpose a scatter plot showing the weights during SGD.
     Xaxis = reduced_w[:,0]
     Yaxis = reduced_w[:,1]
-    Zaxis = findCost(trainX, trainY, Xaxis, Yaxis, ws, ipca)
+    Zaxis = np.apply_along_axis(lambda w: findCost(trainX, trainY, ipca, w[0], w[1]), 0, ws)
+    print("Zaxis scatter:" + Zaxis.shape)
     ax.scatter(Xaxis, Yaxis, Zaxis, color='r')
 
     plt.show()
@@ -172,18 +174,18 @@ def findBestHyperparameters():
     #             for epochs in [5, 10, 25, 50, 100]:
     #                 tests.append([hidden, learning, batch, epochs, 0.1])
 
-    tests = [
-        [40, 0.01, 50, 2, 0.1],
-        [40, 0.1, 25, 5, 0.01],
-        [40, 0.001, 50, 10, 0.001],
-        [40, 0.05, 75, 20, 0.001],
-        [50, 0.1, 75, 5, 0.01],
-        [50, 0.01, 25, 10, 0.1],
-        [50, 0.001, 50, 5, 0.1],
-        [30, 0.01, 25, 5, 0.01],
-        [30, 0.1, 50, 20, 0.1],
-        [30, 0.001, 75, 10, 0.001]
-    ]
+    tests = []
+    param1opts = [30,40,50]
+    param2opts = [0.001,0.005,0.01,0.05,0.1]
+    param3opts = [25,50,75]
+    param4opts = [2,5,10,20]
+    param5opts = [0.001,0.01,0.1]
+    for p1 in param1opts:
+        for p2 in param2opts:
+            for p3 in param3opts:
+                for p4 in param4opts:
+                    for p5 in param5opts:
+                        tests.append([p1,p2,p3,p4,p5])
 
     validationX, validationY = loadData("validation")
 
