@@ -73,13 +73,10 @@ def plotSGDPath(trainX, trainY, ws):
 # want to extend this function to return multiple arguments (in which case you
 # will also need to modify slightly the gradient check code below).
 def fCE(X, Y, w):
-    W1, b1, W2, b2 = unpack(w)
-
-    # TODO
-    # copied from hw3
-    prod = np.multiply(X, np.log(Y))
+    Y_hat = calc_prediction(X, w)
+    prod = np.multiply(Y,np.log(Y_hat))
     k_summed = prod.sum(axis=1)
-    return -np.average(k_summed)
+    return - np.average(k_summed)
     # return cost
 
 
@@ -155,6 +152,7 @@ def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
 
 def findBestHyperparameters():
     # hidden layer, learning rate, minibatch size, epochs, regularization strength
+    test_results = dict()
     tests = [
         [40, 0.01, 32, 2, 0.1],
         [40, 0.1, 16, 5, 0.01],
@@ -181,7 +179,14 @@ def findBestHyperparameters():
         w = pack(W1, b1, W2, b2)
 
         ws = train(epoch_count, minibatch_size, learning_rate, trainX, trainY, validationX, validationY, w)
-        # ce = fCE(validationX, validationY, w)
+        ce = fCE(validationX, validationY, w)
+
+        test_results[test] = ce
+    best_config = tests[0]
+    for config in tests[1:]:
+        if (test_results[config] < test_results[best_config]):
+            best_config = config
+    return best_config, test_results[best_config]
 
 
 if __name__ == "__main__":
