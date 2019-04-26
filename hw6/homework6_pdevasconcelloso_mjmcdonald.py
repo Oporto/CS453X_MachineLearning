@@ -43,28 +43,34 @@ def loadData(which):
     labels = np.load("mnist_{}_labels.npy".format(which))
     return images, labels
 
+def findCost (trainX, trainY, dx1, dx2, ws, ipca):
+    altered = np.apply_along_axis(lambda w: w_vary(w,dx1,dx2), 0, ws)
+    print(altered.shape)
+    ws = ipca.inverse_transform(altered)
+    print(ws.shape)
+    return np.apply_along_axis(lambda w: fCE(trainX,trainY,w.reshape(796,40)), 0, ws)
 
 def plotSGDPath(trainX, trainY, ws):
-    def toyFunction (x1, x2):
-        return np.sin((2 * x1**2 - x2) / 10.)
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
+    ipca = gen_PCA(ws)
+    
+    reduced_w = ipca.transform(ws.reshape(-1,796*40))
     # Compute the CE loss on a grid of points (corresonding to different w).
     axis1 = np.arange(-np.pi, +np.pi, 0.05)  # Just an example
     axis2 = np.arange(-np.pi, +np.pi, 0.05)  # Just an example
     Xaxis, Yaxis = np.meshgrid(axis1, axis2)
-    Zaxis = np.zeros((len(axis1), len(axis2)))
-    for i in range(len(axis1)):
-        for j in range(len(axis2)):
-            Zaxis[i,j] = toyFunction(Xaxis[i,j], Yaxis[i,j])
+    print(Xaxis.shape, Yaxis.shape)
+    print(Xaxis[1,1])
+    Zaxis = np.apply_along_axis(lambda i: np.apply_along_axis(lambda j: findCost(trainX, trainY, Xaxis[i,j], Yaxis[i,j], reduced_w[-1], ipca), 0, np.arange(len(axis2))), 0, np.arange(len(axis1))).reshape(len(axis1), len(axis2))
     ax.plot_surface(Xaxis, Yaxis, Zaxis, alpha=0.6)  # Keep alpha < 1 so we can see the scatter plot too.
 
     # Now superimpose a scatter plot showing the weights during SGD.
-    Xaxis = 2*np.pi*np.random.random(8) - np.pi  # Just an example
-    Yaxis = 2*np.pi*np.random.random(8) - np.pi  # Just an example
-    Zaxis = toyFunction(Xaxis, Yaxis)
+    Xaxis = reduced_w[:,0]
+    Yaxis = reduced_w[:,1]
+    Zaxis = findCost(trainX, trainY, Xaxis, Yaxis, ws, ipca)
     ax.scatter(Xaxis, Yaxis, Zaxis, color='r')
 
     plt.show()
@@ -138,6 +144,7 @@ def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
     np.random.shuffle(train_fused)
     train_images = train_fused[:, :-10].T
     train_values = train_fused[:, -10:]
+    ws = []
 
     for epoch in range(epochs):
         for round in range(math.ceil(train_images.shape[0] / batch_size)):
@@ -146,10 +153,12 @@ def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
             sample_val = train_values[round * batch_size:(round + 1) *
                                                          batch_size]
             grad = gradCE(sample_img, sample_val, w)
+            
             w = w - epsilon * grad
+        ws.append(w)
 
-    # print("fCE:", fCE(trainX, trainY, w))
-    return w
+    print("fCE:", fCE(trainX, trainY, w))
+    return np.array(ws)
 
 
 def findBestHyperparameters():
@@ -206,27 +215,14 @@ def findBestHyperparameters():
     print("fCE:", best_score)
     return best_config, best_score
 
-def gen_PCA_plot(X, Y, w_array):
-    w_array = w_array.reshape(-1,786*40)
-    indx = np.arange(w_array.shape[1])
+def gen_PCA(w_array):
     ipca = IncrementalPCA(n_components=2)
-    w_reduced = ipca.fit_transform(w_array)
-    indx = ipca.transform(indx)
-    w_best = w_array[-1]
-    interpole_costs, var_x1, var_x2 = varied_ws(X,Y, w_best, indx)
-    scatter_costs = np.apply_along_axis(lambda w: fCE(X, Y, w.reshape(786,40)), 1, w_array)
+    ipca.fit(w_array.reshape(-1,796*40))
+    return ipca
 
-    return interpole_costs, var_x1, var_x2, w_reduced, scatter_costs
-
-def varied_ws(X,Y,w_best, indx):
-    var_x1 = np.arange(w_best[0]-20,40/1000,w_best[0]+20)
-    var_x2 = np.arange(w_best[1]-20,40/1000,w_best[1]+20)
-    costs = np.apply_along_axis(lambda x1: np.apply_along_axis(lambda x2: fCE(X,Y,w_replace(w,x1,x2,indx).reshape(786,40)), 1, var_x2), 1, var_x1)
-    return costs, var_x1, var_x2
-
-def w_replace(w,x1,x2,indx):
-    w[indx[0]]=x1
-    w[indx[1]]=x2
+def w_vary(w,x1,x2):
+    w[0]+=x1
+    w[1]+=x2
     return w
 
 
@@ -263,10 +259,10 @@ if __name__ == "__main__":
     ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
 
     # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
-    # findBestHyperparameters()
+    best_config, best_score = findBestHyperparameters()
 
     # Plot the SGD trajectory
-    # plotSGDPath(trainX, trainY, ws)
+    plotSGDPath(trainX, trainY, ws)
 
     print("test fCE:", fCE(testX, testY, ws))
 
