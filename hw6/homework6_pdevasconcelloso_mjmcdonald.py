@@ -82,7 +82,7 @@ def fCE(X, Y, w):
 
 # convenience helper to calculate z1 or z2 during prediction
 def calc_z(w, x, b):
-    return w.dot(x) + b
+    return np.add(w.T.dot(x.T).T, b)
 
 
 def relu(x):
@@ -90,7 +90,9 @@ def relu(x):
 
 
 def relu_prime(x):
-    return 1 if x > 0 else 0
+    relu_prime_x = np.ones(x.shape)
+    comp = x > 0
+    return np.multiply(relu_prime_x, comp)
 
 
 def softmax(x):
@@ -98,7 +100,7 @@ def softmax(x):
     exp = np.exp(x)
     sum = np.sum(exp, axis=1)
     print(sum.shape)
-    return np.divide(exp, sum)
+    return np.divide(exp.T, sum).T
 
 
 def calc_prediction(X, w):
@@ -118,15 +120,16 @@ def calc_prediction(X, w):
 def gradCE(X, Y, w):
     W1, b1, W2, b2 = unpack(w)
     z1, h1, y_hat = calc_prediction(X, w)
-    first_component = np.transpose(y_hat - Y).dot(W2)
+    first_component = np.dot(y_hat - Y, W2.T).T
     second_component = relu_prime(z1.T)
     g_t = np.multiply(first_component, second_component)
 
-    grad_W2 = np.dot(y_hat - Y, h1.T)
-    grad_b2 = y_hat - Y
-    grad_W1 = np.dot(g_t.T, X.T)
-    grad_b1 = g_t.T
-    return pack(grad_W1, grad_b1, grad_W2, grad_b2)
+    grad_W2 = np.dot(np.transpose(y_hat - Y), h1)
+    grad_b2 = np.average(y_hat - Y, axis=0)
+    grad_W1 = np.dot(g_t, X)
+    grad_b1 = np.average(g_t.T, axis=0)
+    print(grad_W1.shape, grad_b1.shape, grad_W2.shape, grad_b2.shape)
+    return pack(grad_W1.T, grad_b1.T, grad_W2.T, grad_b2.T)
 
 
 # Given training and testing datasets and an initial set of weights/biases b,
@@ -211,12 +214,12 @@ if __name__ == "__main__":
 
     # Check that the gradient is correct on just a few examples (randomly drawn).
     idxs = np.random.permutation(trainX.shape[0])[0:NUM_CHECK]
-    print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[idxs,:]), np.atleast_2d(trainY[idxs,:]), w_), \
-                                    lambda w_: gradCE(np.atleast_2d(trainX[idxs,:]), np.atleast_2d(trainY[idxs,:]), w_), \
+    print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[idxs,:]), np.atleast_2d(trainY[idxs,:]), w_),
+                                    lambda w_: gradCE(np.atleast_2d(trainX[idxs,:]), np.atleast_2d(trainY[idxs,:]), w_),
                                     w))
 
     # Train the network and obtain the sequence of w's obtained using SGD.
-    ws = train(5, 32, 0.01, trainX, trainY, testX, testY, w)
+    ws = train(6, 32, 0.01, trainX, trainY, testX, testY, w)
 
     # Plot the SGD trajectory
-    plotSGDPath(trainX, trainY, ws)
+    # plotSGDPath(trainX, trainY, ws)
