@@ -5,7 +5,7 @@ import scipy.optimize
 import math
 
 NUM_INPUT = 784  # Number of input neurons
-NUM_HIDDEN = 50  # Number of hidden neurons
+NUM_HIDDEN = 40  # Number of hidden neurons
 NUM_OUTPUT = 10  # Number of output neurons
 NUM_CHECK = 5  # Number of examples on which to check the gradient
 
@@ -147,13 +147,13 @@ def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
             grad = gradCE(sample_img, sample_val, w)
             w = w - epsilon * grad
 
-    print("fCE:", fCE(trainX, trainY, w))
+    # print("fCE:", fCE(trainX, trainY, w))
     return w
 
 
 def findBestHyperparameters():
     # hidden layer, learning rate, minibatch size, epochs, regularization strength
-    test_results = dict()
+    test_results = []
     tests = [
         [40, 0.01, 50, 2, 0.1],
         [40, 0.1, 25, 5, 0.01],
@@ -181,14 +181,21 @@ def findBestHyperparameters():
 
         ws = train(epoch_count, minibatch_size, learning_rate, trainX, trainY, validationX, validationY, w)
         ce = fCE(validationX, validationY, w)
+        print("test:",test)
+        print("ce:",ce)
 
-        test_results[index] = ce
+        test_results.append((test, ce))
 
-    best_config = 0
-    for i in range(10):
-        if (test_results[i] < test_results[best_config]):
-            best_config = i
-    return tests[best_config], test_results[best_config]
+    best_config = []
+    best_score = 100000
+    for test in test_results:
+        config, ce = test
+        if ce < best_score:
+            best_score = ce
+            best_config = config
+    print("Best config:", best_config)
+    print("fCE:", best_score)
+    return best_config, best_score
 
 
 if __name__ == "__main__":
@@ -219,10 +226,10 @@ if __name__ == "__main__":
     #                                 w))
     
     # Train the network and obtain the sequence of w's obtained using SGD.
-    ws = train(10, 25, 0.01, trainX, trainY, testX, testY, w)
+    # ws = train(10, 25, 0.1, trainX, trainY, testX, testY, w)
 
-    # best result: [hidden=50, epsilon=0.01, batch_size=25, epochs=10, regularization=0.1]
-    print(findBestHyperparameters())
+    # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
+    findBestHyperparameters()
 
     # Plot the SGD trajectory
     # plotSGDPath(trainX, trainY, ws)
