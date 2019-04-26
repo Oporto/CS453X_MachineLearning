@@ -28,10 +28,11 @@ def unpack(w):
 # return a vector w containing all of them.
 # This is useful for performing a gradient check with check_grad.
 def pack(W1, b1, W2, b2):
+    # print(W1.shape, b1.shape, W2.shape, b2.shape)
     # 784x40, 40x1, 40x10, 10x1
     W1b1 = np.vstack((W1, b1))  # 785x40
     W1b1W2 = np.vstack((W1b1, W2.T))  # 795x40
-    b2z = np.hstack((b2, np.zeros(NUM_HIDDEN - NUM_OUTPUT)))  # 40x1
+    b2z = np.hstack((b2, np.zeros(W1.shape[1] - 10)))  # 40x1
     packed = np.vstack((W1b1W2, b2z))  # 796x40
     return packed
 
@@ -147,29 +148,37 @@ def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
             grad = gradCE(sample_img, sample_val, w)
             w = w - epsilon * grad
 
-    print("fCE:", fCE(trainX, trainY, w))
+    # print("fCE:", fCE(trainX, trainY, w))
     return w
 
 
 def findBestHyperparameters():
     # hidden layer, learning rate, minibatch size, epochs, regularization strength
-    test_results = dict()
+    test_results = []
+    tests = []
+
+    # for hidden in [30, 40, 50]:
+    #     for learning in [0.1, 0.01, 0.05, 0.001, 0.005]:
+    #         for batch in [25, 50, 75]:
+    #             for epochs in [5, 10, 25, 50, 100]:
+    #                 tests.append([hidden, learning, batch, epochs, 0.1])
+
     tests = [
         [40, 0.01, 50, 2, 0.1],
         [40, 0.1, 25, 5, 0.01],
         [40, 0.001, 50, 10, 0.001],
-        [40, 0.05, 75, 5, 0.001],
-        [50, 0.01, 75, 5, 0.01],
-        [50, 0.1, 25, 10, 0.1],
+        [40, 0.05, 75, 20, 0.001],
+        [50, 0.1, 75, 5, 0.01],
+        [50, 0.01, 25, 10, 0.1],
         [50, 0.001, 50, 5, 0.1],
         [30, 0.01, 25, 5, 0.01],
-        [30, 0.1, 50, 5, 0.1],
-        [30, 0.001, 75, 10, 0.001],
+        [30, 0.1, 50, 20, 0.1],
+        [30, 0.001, 75, 10, 0.001]
     ]
 
     validationX, validationY = loadData("validation")
 
-    for test in tests:
+    for index, test in enumerate(tests):
         hidden_layer, learning_rate, minibatch_size, epoch_count, regularization_str = test
         # apply settings as necessary
         W1 = 2 * (np.random.random(size=(NUM_INPUT, hidden_layer)) / NUM_INPUT ** 0.5) - 1. / NUM_INPUT ** 0.5
@@ -181,13 +190,21 @@ def findBestHyperparameters():
 
         ws = train(epoch_count, minibatch_size, learning_rate, trainX, trainY, validationX, validationY, w)
         ce = fCE(validationX, validationY, w)
+        print("test:",test)
+        print("ce:",ce)
 
-        test_results[test] = ce
-    best_config = tests[0]
-    for config in tests[1:]:
-        if (test_results[config] < test_results[best_config]):
+        test_results.append((test, ce))
+
+    best_config = []
+    best_score = 100000
+    for test in test_results:
+        config, ce = test
+        if ce < best_score:
+            best_score = ce
             best_config = config
-    return best_config, test_results[best_config]
+    print("Best config:", best_config)
+    print("fCE:", best_score)
+    return best_config, best_score
 
 def gen_PCA_plot(X, Y, w_array):
     w_array = w_array.reshape(-1,786*40)
@@ -238,12 +255,18 @@ if __name__ == "__main__":
     # Check that the gradient is correct on just a few examples (randomly drawn).
     idxs = np.random.permutation(trainX.shape[0])[0:NUM_CHECK]
     
-    print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
-                                    lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
-                                    w))
+    # print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
+    #                                 lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
+    #                                 w))
     
     # Train the network and obtain the sequence of w's obtained using SGD.
-    ws = train(6, 32, 0.01, trainX, trainY, testX, testY, w)
+    ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
+
+    # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
+    # findBestHyperparameters()
 
     # Plot the SGD trajectory
     # plotSGDPath(trainX, trainY, ws)
+
+    print("test fCE:", fCE(testX, testY, ws))
+
