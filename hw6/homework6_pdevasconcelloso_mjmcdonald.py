@@ -102,9 +102,8 @@ def relu(x):
 
 
 def relu_prime(x):
-    relu_prime_x = np.ones(x.shape)
     comp = x > 0
-    return np.multiply(relu_prime_x, comp)
+    return 1 * comp
 
 
 def softmax(x):
@@ -206,16 +205,17 @@ def findBestHyperparameters():
     print("fCE:", best_score)
     return best_config, best_score
 
+
 def gen_PCA(w_array):
     ipca = IncrementalPCA(n_components=2)
     ipca.fit(w_array.reshape(-1,796*40))
     return ipca
 
+
 def w_vary(w,x1,x2):
     w[0]+=x1
     w[1]+=x2
     return w
-
 
 
 if __name__ == "__main__":
@@ -240,20 +240,20 @@ if __name__ == "__main__":
     assert np.array_equal(b20, b2)
 
     # Check that the gradient is correct on just a few examples (randomly drawn).
-    idxs = np.random.permutation(trainX.shape[0])[0:NUM_CHECK]
-    
-    # print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
-    #                                 lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_),
-    #                                 w))
+    idxs = np.random.permutation(trainX.shape[1])[0:NUM_CHECK]
+
+    print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_.reshape(796, 40)),
+                                    lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_.reshape(796, 40)).reshape(-1),
+                                    w.reshape(-1)))
     
     # Train the network and obtain the sequence of w's obtained using SGD.
-    ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
+    # ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
 
     # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
     # best_config, best_score = findBestHyperparameters()
 
     # Plot the SGD trajectory
-    plotSGDPath(trainX, trainY, ws[-10:])
+    # plotSGDPath(trainX, trainY, ws[-10:])
 
-    print("test fCE:", fCE(testX, testY, ws))
+    # print("test fCE:", fCE(testX, testY, ws))
 
