@@ -76,7 +76,7 @@ def fCE(X, Y, w):
     Y_hat = calc_prediction(X, w)
     prod = np.multiply(Y,np.log(Y_hat))
     k_summed = prod.sum(axis=1)
-    return - np.average(k_summed)
+    return -1*np.average(k_summed)
     # return cost
 
 
