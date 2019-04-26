@@ -28,7 +28,6 @@ def unpack(w):
 # return a vector w containing all of them.
 # This is useful for performing a gradient check with check_grad.
 def pack(W1, b1, W2, b2):
-    # print(W1.shape, b1.shape, W2.shape, b2.shape)
     # 784x40, 40x1, 40x10, 10x1
     W1b1 = np.vstack((W1, b1))  # 785x40
     W1b1W2 = np.vstack((W1b1, W2.T))  # 795x40
@@ -44,7 +43,6 @@ def loadData(which):
     return images, labels
 
 def findCost (trainX, trainY, ipca, x1, x2):
-    print("finding cost for: ", x1,x2)
     w = ipca.inverse_transform(np.array([x1,x2])).reshape(796,-1)
     return fCE(trainX,trainY,w)
 
@@ -57,25 +55,19 @@ def plotSGDPath(trainX, trainY, ws):
     ipca = gen_PCA(ws)
     
     reduced_w = ipca.transform(ws.reshape(n_ws,-1))
-    print("Transformed")
     # Compute the CE loss on a grid of points (corresonding to different w).
     changes = np.arange(-20, 20,2)
     axis1 = np.add(changes, reduced_w[-1][0])
     axis2 = np.add(changes, reduced_w[-1][1])
     Xaxis, Yaxis = np.meshgrid(axis1, axis2)
-    print("meshed")
     find_vect_cost = np.vectorize(findCost, excluded=[0,1,2])
     Zaxis = find_vect_cost(trainX, trainY, ipca, Xaxis, Yaxis)
-    print(Xaxis.shape, Yaxis.shape)
-    print(Xaxis[1,1])
-    print(Zaxis.shape)
     ax.plot_surface(Xaxis, Yaxis, Zaxis, alpha=0.6)  # Keep alpha < 1 so we can see the scatter plot too.
 
     # Now superimpose a scatter plot showing the weights during SGD.
     Xaxis = reduced_w[:,0]
     Yaxis = reduced_w[:,1]
     Zaxis = np.apply_along_axis(lambda w: fCE(trainX,trainY,w.reshape(796,-1)), 1, ws.reshape(n_ws,-1))
-    print("Zaxis scatter:", Zaxis.shape)
     ax.scatter(Xaxis, Yaxis, Zaxis, color='r')
 
     plt.show()
@@ -103,7 +95,7 @@ def relu(x):
 
 
 def relu_prime(x):
-    comp = x > 0
+    comp = x >= 0
     return 1 * comp
 
 
@@ -150,7 +142,7 @@ def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
     train_values = train_fused[:, -10:]
     ws = []
 
-    for epoch in range(epochs):
+    for __ in range(epochs):
         for round in range(math.ceil(train_images.shape[0] / batch_size)):
             sample_img = train_images[:,round * batch_size:(round + 1) *
                                                          batch_size]
@@ -178,7 +170,7 @@ def findBestHyperparameters():
 
     validationX, validationY = loadData("validation")
 
-    for index, test in enumerate(tests):
+    for test in tests:
         hidden_layer, learning_rate, minibatch_size, epoch_count, regularization_str = test
         # apply settings as necessary
         W1 = 2 * (np.random.random(size=(NUM_INPUT, hidden_layer)) / NUM_INPUT ** 0.5) - 1. / NUM_INPUT ** 0.5
@@ -190,8 +182,6 @@ def findBestHyperparameters():
 
         train(epoch_count, minibatch_size, learning_rate, trainX, trainY, validationX, validationY, w)
         ce = fCE(validationX, validationY, w)
-        print("test:",test)
-        print("ce:",ce)
 
         test_results.append((test, ce))
 
@@ -220,7 +210,6 @@ def w_vary(w,x1,x2):
 
 
 def percent_correct(predict, actual):
-    print(predict.shape, actual.shape)
     pred = np.argmax(predict, axis=1)
     act = np.argmax(actual, axis=1)
     bool_arr = np.equal(pred, act)
@@ -239,9 +228,8 @@ def apply_best_configuration(config, testX, testY, trainX, trainY):
 
     #Obtain train weights
     ws = train(epoch_count, minibatch_size, learning_rate, trainX, trainY, trainX, trainY, w)
-    print(ws.shape)
     #Plot using train weights
-    #######plotSGDPath(trainX, trainY, ws)
+    plotSGDPath(trainX, trainY, ws)
 
     #Test accuracy and cost on test set
     ce = fCE(testX, testY, ws[-1])
@@ -256,7 +244,7 @@ if __name__ == "__main__":
     if "trainX" not in globals():
         trainX, trainY = loadData("train")
         testX, testY = loadData("test")
-
+    np.random.seed(4)
     # Initialize weights randomly
     W1 = 2*(np.random.random(size=(NUM_INPUT, NUM_HIDDEN))/NUM_INPUT**0.5) - 1./NUM_INPUT**0.5
     b1 = 0.01 * np.ones(NUM_HIDDEN)
@@ -264,7 +252,6 @@ if __name__ == "__main__":
     b2 = 0.01 * np.ones(NUM_OUTPUT)
 
     w = pack(W1, b1, W2, b2)
-    print(w.shape)
 
     W10, b10, W20, b20 = unpack(w)
     assert np.array_equal(W10, W1)
@@ -273,19 +260,17 @@ if __name__ == "__main__":
     assert np.array_equal(b20, b2)
 
     # Check that the gradient is correct on just a few examples (randomly drawn).
-    idxs = np.random.permutation(trainX.shape[1])[0:NUM_CHECK]
+    idxs = np.random.permutation(trainX.shape[1])[0:5]
 
     print(scipy.optimize.check_grad(lambda w_: fCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_.reshape(796, 40)),
                                     lambda w_: gradCE(np.atleast_2d(trainX[:,idxs]), np.atleast_2d(trainY[idxs,:]), w_.reshape(796, 40)).reshape(-1),
                                     w.reshape(-1)))
     
     # Train the network and obtain the sequence of w's obtained using SGD.
-    # ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
+    ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
 
     # best result: [hidden=50, epsilon=0.005, batch_size=25, epochs=10, regularization=0.1]
-    #best_config, best_score = findBestHyperparameters()
-    best_config = [50, 0.005, 25, 10, 0.1]
-    print(best_config)
+    best_config, best_score = findBestHyperparameters()
 
     # Plot the SGD trajectory
     ce, ac = apply_best_configuration(best_config, testX, testY, trainX, trainY)
