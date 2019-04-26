@@ -2,6 +2,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import scipy.optimize
+import math
 
 NUM_INPUT = 784  # Number of input neurons
 NUM_HIDDEN = 40  # Number of hidden neurons
@@ -74,11 +75,43 @@ def plotSGDPath(trainX, trainY, ws):
 def fCE(X, Y, w):
     W1, b1, W2, b2 = unpack(w)
 
+    # TODO
     # copied from hw3
     prod = np.multiply(X, np.log(Y))
     k_summed = prod.sum(axis=1)
     return -np.average(k_summed)
     # return cost
+
+
+# convenience helper to calculate z1 or z2 during prediction
+def calc_z(w, x, b):
+    return w.dot(x) + b
+
+
+def relu(x):
+    return np.maximum(x, np.zeros(x.shape))
+
+
+def relu_prime(x):
+    return 1 if x > 0 else 0
+
+
+def softmax(x):
+    print(x.shape)
+    exp = np.exp(x)
+    sum = np.sum(exp, axis=1)
+    print(sum.shape)
+    return np.divide(exp, sum)
+
+
+def calc_prediction(X, w):
+    W1, b1, W2, b2 = unpack(w)
+    # 784x40, 40x1, 40x10, 10x1
+    z1 = calc_z(W1, X, b1)  # 40*N
+    h1 = relu(z1)  # 40*N
+    z2 = calc_z(W2, h1, b2)
+    y_hat = softmax(z2)
+    return z1, h1, y_hat
 
 
 # Given training images X, associated labels Y, and a vector of combined weights
@@ -87,13 +120,37 @@ def fCE(X, Y, w):
 # will also need to modify slightly the gradient check code below).
 def gradCE(X, Y, w):
     W1, b1, W2, b2 = unpack(w)
-    return grad
+    z1, h1, y_hat = calc_prediction(X, w)
+    first_component = np.transpose(y_hat - Y).dot(W2)
+    second_component = relu_prime(z1.T)
+    g_t = np.multiply(first_component, second_component)
+
+    grad_W2 = np.dot(y_hat - Y, h1.T)
+    grad_b2 = y_hat - Y
+    grad_W1 = np.dot(g_t.T, X.T)
+    grad_b1 = g_t.T
+    return pack(grad_W1, grad_b1, grad_W2, grad_b2)
 
 
 # Given training and testing datasets and an initial set of weights/biases b,
 # train the NN. Then return the sequence of w's obtained during SGD.
-def train(trainX, trainY, testX, testY, w):
-    return ws
+def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
+    train_fused = np.hstack((trainX, trainY))
+    np.random.shuffle(train_fused)
+    train_images = train_fused[:, :-10]
+    train_values = train_fused[:, -10:]
+
+    for epoch in range(epochs):
+        for round in range(math.ceil(train_images.shape[0] / batch_size)):
+            sample_img = train_images[round * batch_size:(round + 1) *
+                                                         batch_size]
+            sample_val = train_values[round * batch_size:(round + 1) *
+                                                         batch_size]
+            grad = gradCE(sample_img, sample_val, w)
+            w = w - epsilon * grad
+
+    print("fCE:", fCE(trainX, trainY, w))
+    return w
 
 
 def findBestHyperparameters():
@@ -123,7 +180,7 @@ def findBestHyperparameters():
 
         w = pack(W1, b1, W2, b2)
 
-        ws = train(trainX, trainY, validationX, validationY, w)
+        ws = train(epoch_count, minibatch_size, learning_rate, trainX, trainY, validationX, validationY, w)
         # ce = fCE(validationX, validationY, w)
 
 
