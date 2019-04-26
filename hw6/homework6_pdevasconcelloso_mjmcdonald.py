@@ -154,6 +154,14 @@ def train(epochs, batch_size, epsilon, trainX, trainY, testX, testY, w):
 def findBestHyperparameters():
     # hidden layer, learning rate, minibatch size, epochs, regularization strength
     test_results = []
+    tests = []
+
+    # for hidden in [30, 40, 50]:
+    #     for learning in [0.1, 0.01, 0.05, 0.001, 0.005]:
+    #         for batch in [25, 50, 75]:
+    #             for epochs in [5, 10, 25, 50, 100]:
+    #                 tests.append([hidden, learning, batch, epochs, 0.1])
+
     tests = [
         [40, 0.01, 50, 2, 0.1],
         [40, 0.1, 25, 5, 0.01],
@@ -164,7 +172,7 @@ def findBestHyperparameters():
         [50, 0.001, 50, 5, 0.1],
         [30, 0.01, 25, 5, 0.01],
         [30, 0.1, 50, 20, 0.1],
-        [30, 0.001, 75, 10, 0.001],
+        [30, 0.001, 75, 10, 0.001]
     ]
 
     validationX, validationY = loadData("validation")
@@ -226,7 +234,7 @@ if __name__ == "__main__":
     #                                 w))
     
     # Train the network and obtain the sequence of w's obtained using SGD.
-    ws = train(10, 25, 0.1, trainX, trainY, testX, testY, w)
+    ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
 
     # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
     # findBestHyperparameters()
@@ -235,4 +243,4 @@ if __name__ == "__main__":
     # plotSGDPath(trainX, trainY, ws)
 
     print("test fCE:", fCE(testX, testY, ws))
-    
+
