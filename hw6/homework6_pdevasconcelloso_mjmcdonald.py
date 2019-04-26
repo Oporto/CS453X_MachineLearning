@@ -158,12 +158,12 @@ def findBestHyperparameters():
         [40, 0.01, 50, 2, 0.1],
         [40, 0.1, 25, 5, 0.01],
         [40, 0.001, 50, 10, 0.001],
-        [40, 0.05, 75, 5, 0.001],
+        [40, 0.05, 75, 20, 0.001],
         [50, 0.1, 75, 5, 0.01],
         [50, 0.01, 25, 10, 0.1],
         [50, 0.001, 50, 5, 0.1],
         [30, 0.01, 25, 5, 0.01],
-        [30, 0.1, 50, 5, 0.1],
+        [30, 0.1, 50, 20, 0.1],
         [30, 0.001, 75, 10, 0.001],
     ]
 
@@ -226,10 +226,13 @@ if __name__ == "__main__":
     #                                 w))
     
     # Train the network and obtain the sequence of w's obtained using SGD.
-    # ws = train(10, 25, 0.1, trainX, trainY, testX, testY, w)
+    ws = train(10, 25, 0.1, trainX, trainY, testX, testY, w)
 
     # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
-    findBestHyperparameters()
+    # findBestHyperparameters()
 
     # Plot the SGD trajectory
     # plotSGDPath(trainX, trainY, ws)
+
+    print("test fCE:", fCE(testX, testY, ws))
+    
