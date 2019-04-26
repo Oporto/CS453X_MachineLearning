@@ -221,7 +221,7 @@ if __name__ == "__main__":
     # Train the network and obtain the sequence of w's obtained using SGD.
     ws = train(10, 25, 0.01, trainX, trainY, testX, testY, w)
 
-    # best result: [50, 0.01, 25, 10, 0.1],
+    # best result: [hidden=50, epsilon=0.01, batch_size=25, epochs=10, regularization=0.1]
     print(findBestHyperparameters())
 
     # Plot the SGD trajectory
