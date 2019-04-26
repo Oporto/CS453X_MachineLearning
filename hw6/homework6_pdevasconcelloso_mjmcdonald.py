@@ -45,17 +45,18 @@ def loadData(which):
 
 def findCost (trainX, trainY, ipca, x1, x2):
     print("finding cost for: ", x1,x2)
-    w = ipca.inverse_transform(np.array([x1,x2])).reshape(796,40)
+    w = ipca.inverse_transform(np.array([x1,x2])).reshape(796,-1)
     return fCE(trainX,trainY,w)
 
 def plotSGDPath(trainX, trainY, ws):
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
+    n_ws = ws.shape[0]
 
     ipca = gen_PCA(ws)
     
-    reduced_w = ipca.transform(ws.reshape(-1,796*40))
+    reduced_w = ipca.transform(ws.reshape(n_ws,-1))
     print("Transformed")
     # Compute the CE loss on a grid of points (corresonding to different w).
     changes = np.arange(-20, 20,2)
@@ -73,7 +74,7 @@ def plotSGDPath(trainX, trainY, ws):
     # Now superimpose a scatter plot showing the weights during SGD.
     Xaxis = reduced_w[:,0]
     Yaxis = reduced_w[:,1]
-    Zaxis = np.apply_along_axis(lambda w: fCE(trainX,trainY,w.reshape(796,40)), 1, ws.reshape(-1,796*40))
+    Zaxis = np.apply_along_axis(lambda w: fCE(trainX,trainY,w.reshape(796,-1)), 1, ws.reshape(n_ws,-1))
     print("Zaxis scatter:", Zaxis.shape)
     ax.scatter(Xaxis, Yaxis, Zaxis, color='r')
 
@@ -208,7 +209,7 @@ def findBestHyperparameters():
 
 def gen_PCA(w_array):
     ipca = IncrementalPCA(n_components=2)
-    ipca.fit(w_array.reshape(-1,796*40))
+    ipca.fit(w_array.reshape(w_array.shape[0],-1))
     return ipca
 
 def w_vary(w,x1,x2):
@@ -217,6 +218,7 @@ def w_vary(w,x1,x2):
     return w
 
 def percent_correct(predict, actual):
+    print(predict.shape, actual.shape)
     pred = np.argmax(predict, axis=1)
     act = np.argmax(actual, axis=1)
     bool_arr = np.equal(pred, act)
@@ -234,13 +236,14 @@ def apply_best_configuration(config, testX, testY, trainX, trainY):
 
     #Obtain train weights
     ws = train(epoch_count, minibatch_size, learning_rate, trainX, trainY, trainX, trainY, w)
-
+    print(ws.shape)
     #Plot using train weights
-    plotSGDPath(trainX, trainY, ws)
+    #######plotSGDPath(trainX, trainY, ws)
 
     #Test accuracy and cost on test set
     ce = fCE(testX, testY, ws[-1])
-    ac = percent_correct(calc_prediction(testX,ws[-1]), testY)
+    __, __, pred = calc_prediction(testX,ws[-1])
+    ac = percent_correct(pred, testY)
 
     return ce, ac
 
@@ -280,8 +283,9 @@ if __name__ == "__main__":
     # Train the network and obtain the sequence of w's obtained using SGD.
     ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
 
-    # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
-    best_config, best_score = findBestHyperparameters()
+    # best result: [hidden=50, epsilon=0.005, batch_size=25, epochs=10, regularization=0.1]
+    #best_config, best_score = findBestHyperparameters()
+    best_config = [50, 0.005, 25, 10, 0.1]
     print(best_config)
 
     # Plot the SGD trajectory
