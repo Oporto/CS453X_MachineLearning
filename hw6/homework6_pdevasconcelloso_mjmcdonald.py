@@ -44,6 +44,7 @@ def loadData(which):
     return images, labels
 
 def findCost (trainX, trainY, ipca, x1, x2):
+    print("finding cost for: ", x1,x2)
     w = ipca.inverse_transform(np.array([x1,x2])).reshape(796,40)
     return fCE(trainX,trainY,w)
 
@@ -55,12 +56,13 @@ def plotSGDPath(trainX, trainY, ws):
     ipca = gen_PCA(ws)
     
     reduced_w = ipca.transform(ws.reshape(-1,796*40))
+    print("Transformed")
     # Compute the CE loss on a grid of points (corresonding to different w).
-    axis1 = np.arange(-np.pi, +np.pi, 0.05)  # Just an example
-    axis2 = np.arange(-np.pi, +np.pi, 0.05)  # Just an example
-    axis1 = np.add(axis1, reduced_w[-1][0])
-    axis2 = np.add(axis2, reduced_w[-1][1])
+    changes = np.arange(-20, 20,4)
+    axis1 = np.add(changes, reduced_w[-1][0])
+    axis2 = np.add(changes, reduced_w[-1][1])
     Xaxis, Yaxis = np.meshgrid(axis1, axis2)
+    print("meshed")
     find_vect_cost = np.vectorize(findCost, excluded=[0,1,2])
     Zaxis = find_vect_cost(trainX, trainY, ipca, Xaxis, Yaxis)
     print(Xaxis.shape, Yaxis.shape)
@@ -71,7 +73,7 @@ def plotSGDPath(trainX, trainY, ws):
     # Now superimpose a scatter plot showing the weights during SGD.
     Xaxis = reduced_w[:,0]
     Yaxis = reduced_w[:,1]
-    Zaxis = np.apply_along_axis(lambda w: findCost(trainX, trainY, ipca, w[0], w[1]), 0, ws)
+    Zaxis = np.apply_along_axis(lambda w: fCE(trainX,trainY,w.reshape(796,40)), 1, ws.reshape(-1,796*40))
     print("Zaxis scatter:" + Zaxis.shape)
     ax.scatter(Xaxis, Yaxis, Zaxis, color='r')
 
@@ -168,24 +170,11 @@ def findBestHyperparameters():
     test_results = []
     tests = []
 
-    # for hidden in [30, 40, 50]:
-    #     for learning in [0.1, 0.01, 0.05, 0.001, 0.005]:
-    #         for batch in [25, 50, 75]:
-    #             for epochs in [5, 10, 25, 50, 100]:
-    #                 tests.append([hidden, learning, batch, epochs, 0.1])
-
-    tests = []
-    param1opts = [30,40,50]
-    param2opts = [0.001,0.005,0.01,0.05,0.1]
-    param3opts = [25,50,75]
-    param4opts = [2,5,10,20]
-    param5opts = [0.001,0.01,0.1]
-    for p1 in param1opts:
-        for p2 in param2opts:
-            for p3 in param3opts:
-                for p4 in param4opts:
-                    for p5 in param5opts:
-                        tests.append([p1,p2,p3,p4,p5])
+    for hidden in [30, 40, 50]:
+        for learning in [0.001,0.005,0.01,0.05,0.1]:
+            for batch in [25, 50, 75]:
+                for epochs in [5, 10, 25, 50, 100]:
+                    tests.append([hidden, learning, batch, epochs, 0.1])
 
     validationX, validationY = loadData("validation")
 
@@ -261,10 +250,10 @@ if __name__ == "__main__":
     ws = train(50, 50, 0.001, trainX, trainY, testX, testY, w)
 
     # best result: [hidden=40, epsilon=0.1, batch_size=25, epochs=5, regularization=0.01]
-    best_config, best_score = findBestHyperparameters()
+    # best_config, best_score = findBestHyperparameters()
 
     # Plot the SGD trajectory
-    plotSGDPath(trainX, trainY, ws)
+    plotSGDPath(trainX, trainY, ws[-10:])
 
     print("test fCE:", fCE(testX, testY, ws))
 
