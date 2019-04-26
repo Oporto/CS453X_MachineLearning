@@ -1,5 +1,6 @@
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
+from sklearn.decomposition import IncrementalPCA
 import matplotlib.pyplot as plt
 import scipy.optimize
 import math
@@ -188,6 +189,30 @@ def findBestHyperparameters():
             best_config = config
     return best_config, test_results[best_config]
 
+def gen_PCA_plot(X, Y, w_array):
+    w_array = w_array.reshape(-1,786*40)
+    indx = np.arange(w_array.shape[1])
+    ipca = IncrementalPCA(n_components=2)
+    w_reduced = ipca.fit_transform(w_array)
+    indx = ipca.transform(indx)
+    w_best = w_array[-1]
+    interpole_costs, var_x1, var_x2 = varied_ws(X,Y, w_best, indx)
+    scatter_costs = np.apply_along_axis(lambda w: fCE(X, Y, w.reshape(786,40)), 1, w_array)
+
+    return interpole_costs, var_x1, var_x2, w_reduced, scatter_costs
+
+def varied_ws(X,Y,w_best, indx):
+    var_x1 = np.arange(w_best[0]-20,40/1000,w_best[0]+20)
+    var_x2 = np.arange(w_best[1]-20,40/1000,w_best[1]+20)
+    costs = np.apply_along_axis(lambda x1: np.apply_along_axis(lambda x2: fCE(X,Y,w_replace(w,x1,x2,indx).reshape(786,40)), 1, var_x2), 1, var_x1)
+    return costs, var_x1, var_x2
+
+def w_replace(w,x1,x2,indx):
+    w[indx[0]]=x1
+    w[indx[1]]=x2
+    return w
+
+
 
 if __name__ == "__main__":
     # Load data
@@ -202,6 +227,7 @@ if __name__ == "__main__":
     b2 = 0.01 * np.ones(NUM_OUTPUT)
 
     w = pack(W1, b1, W2, b2)
+    print(w.shape)
 
     W10, b10, W20, b20 = unpack(w)
     assert np.array_equal(W10, W1)
